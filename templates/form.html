@@ -3,6 +3,21 @@
     <head>
       <meta charset="utf-8">
       <title>Laser projector configurator</title>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+      <script>
+        function updateLaserResponse()
+        {
+          $.ajax({url: "laserResponse", success: function(result){
+                    if ( result.length > 0 ) {
+                      $("#laserResponse").html(result);
+                    }
+                }});
+        }
+        $(document).ready(function(){
+            setInterval('updateLaserResponse()', 3000);
+        });
+        </script>
       <style>
         form {
           width: 820px;
@@ -26,8 +41,14 @@
       <h1>Laser Projector Configurator</h1>
       <form method="post" id=laser action="{{ url_for('sendToLaser') }}">
         <div>
-          <label for="mode">Command (M=Marquee,S=Static,F=Flashing,A=Animation,X=Off?</label>
-          <input name="mode" id="mode" value="{{mode}}">
+          <label for="mode">Command</label>
+          <div><input type="radio" name="mode" id="mode1" value="M" checked>Marquee</input></div>
+          <div><input type="radio" name="mode" id="mode2" value="S">Static</input></div>
+          <div><input type="radio" name="mode" id="mode3" value="F">Flashing</input></div>
+          <div><input type="radio" name="mode" id="mode4" value="I">Interval</input></div>
+          <div><input type="radio" name="mode" id="mode5" value="R">Run Script</input></div>
+          <div><input type="radio" name="mode" id="mode6" value="A">Animation</input></div>
+          <div><input type="radio" name="mode" id="mode7" value="X">Off</input></div>
         </div>
         <div>
           <label for="msg">What is your message ?</label>
@@ -40,9 +61,13 @@
         <div>
           <button>Send to laser</button>
         </div>
+        
       </form>
       <div>
-        <h2>Response : {{lastResponse}}</h2>
+        <h2>Response : <div id="laserResponse">Nothing received yet</div></h2>
       </div>
-    </body>
+      <div>
+        <h2>Command : {{laserCmd}}</h2>
+      </div>
+  </body>
   </html>

@@ -46,4 +46,7 @@ class LaserDisplayController(object):
         """
         read response from the serial port
         """
-        return self.seriallink.readline().decode() 
+        if self.seriallink.in_waiting > 0 :
+            return self.seriallink.readline().decode() 
+        else :
+            return ""

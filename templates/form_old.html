@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Laser projector configurator</title>
+      <style>
+        form {
+          width: 820px;
+        }
+        div {
+          margin-bottom: 20px;
+        }
+        label {
+          display: inline-block;
+          width: 240px;
+          text-align: right;
+          padding-right: 10px;
+        }
+        button, input {
+          width: 550px;
+          float: right;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Laser Projector Configurator</h1>
+      <form method="post" id=laser action="{{ url_for('sendToLaser') }}">
+        <div>
+          <label for="mode">Command (M=Marquee,S=Static,F=Flashing,A=Animation,X=Off?</label>
+          <input name="mode" id="mode" value="{{mode}}">
+        </div>
+        <div>
+          <label for="msg">What is your message ?</label>
+          <input name="msg" value="{{msg}}">
+        </div>
+        <div>
+          <label for="size">What size (0-99) ?</label>
+          <input name="size" value="{{size}}">
+        </div>
+        <div>
+          <button>Send to laser</button>
+        </div>
+      </form>
+      <div>
+        <h2>Response : {{lastResponse}}</h2>
+      </div>
+    </body>
+  </html>
