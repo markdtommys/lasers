@@ -88,6 +88,7 @@ def main():
     parser.add_argument('-a', dest='animation', help='animation to select', default='S')
     group.add_argument('-i', dest='input', help='custom input, must be the name of a script in the inputs folder')
     group.add_argument('-t', dest='displaytext', help='text to display')
+    parser.add_argument('-de', action='store_true' dest='debug', help='send 1 command then constantly listen for messages on the serial interface')
     args = parser.parse_args()
 
     if args.input:
@@ -98,11 +99,13 @@ def main():
         parser.print_help()
         sys.exit(1)
     lc = LaserDisplayController(args.serialdevice, args.baudrate)
-    #response = lc.read_response()
-    #print(response)
     lc.format_command(args.animation, args.displaysize, lasertext)
     lc.send_command()
-    while 1:
+    if args.debug:
+        while 1:
+            response = lc.read_response()
+            print(response)
+    else:
         response = lc.read_response()
         print(response)
 
