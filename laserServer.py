@@ -2,7 +2,16 @@ from flask import Flask, render_template, request
 from laserDriver import LaserDisplayController
 import time
 app = Flask(__name__)
-lc = LaserDisplayController('/dev/ttyACM1', 9600)
+
+"""
+  try ttyACM0 and ttyACM1 as Arduino seems to be arbitrarily on
+  one of these but not always the same one
+"""
+try:
+  lc = LaserDisplayController('/dev/ttyACM1', 9600)
+except :
+  lc = LaserDisplayController('/dev/ttyACM0', 9600)
+
 laserText="HELLO"
 laserMode="M"
 laserSize="25"
