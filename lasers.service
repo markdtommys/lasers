@@ -5,7 +5,7 @@ Restart=always
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=lasers
-User=root
-Group=root
+User=pi
+Group=pi
 [Install]
 WantedBy=multi-user.target
