@@ -62,9 +62,13 @@ class LaserDisplayController(object):
     def read_response(self):
         """
         read response from the serial port
+        NB Must not block!
         """
         try:
-            return self.seriallink.readline().decode() 
+            if self.seriallink.in_waiting > 0 :
+                return self.seriallink.readline().decode() 
+            else :
+                return ""
         except Exception as error:
             return 'ERROR unable to read from the serial interface - ' + str(error)
 

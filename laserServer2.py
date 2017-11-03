@@ -1,6 +1,10 @@
 from flask import Flask, render_template, request
 from laserDriver import LaserDisplayController
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 import time
+import atexit
+
 app = Flask(__name__)
 
 """
@@ -14,10 +18,30 @@ except :
   laserPort = '/dev/ttyACM1'
   lc = LaserDisplayController(laserPort, 9600)
 
-laserText="HELLO"
-laserMode="M"
-laserSize="25"
-laserCmd="M25HELLO"
+laserText=""
+laserMode=""
+laserSize=""
+laserCmd=""
+laserResponse="xXx Test laserResponse xXx"
+
+def read_laser_function():
+    global laserResponse   
+    response = lc.read_response()
+    if len(response) > 0:
+        print "DEBUG read_laser_function : " + response
+        laserResponse = response
+
+scheduler = BackgroundScheduler()
+scheduler.start()
+scheduler.add_job(
+    func=read_laser_function,
+    trigger=IntervalTrigger(seconds=5),
+    id='read_laser_job',
+    name='Read laser every five seconds',
+    replace_existing=True)
+
+# Shut down the scheduler when exiting the app
+atexit.register(lambda: scheduler.shutdown())
 
 """
   To run this 
@@ -35,8 +59,13 @@ def form():
 
 @app.route('/laserResponse', methods=['GET']) 
 def lastResponse():
-    response = lc.read_response() 
-    return render_template('laserResponse.html',laserResponse=response)
+    global laserResponse
+    return laserResponse
+
+@app.route('/clock', methods=['GET']) 
+def clock():
+    response = time.strftime("%A, %d. %B %Y %I:%M:%S %p")
+    return response
 
 @app.route('/sendToLaser', methods=['GET', 'POST'])
 def sendToLaser():
@@ -46,7 +75,7 @@ def sendToLaser():
     laserCmd = laserMode + laserSize + laserText
     lc.format_command(laserMode,laserSize,laserText)
     lc.send_command()
-    return render_template('lasers.html', lastCommand=laserCmd, laserPort=laserPort)
+    return render_template('lasers.html', lastCommand=laserCmd, laserPort=laserPort, laserText=laserText, laserMode=laserMode, laserSize=laserSize)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0',port=5000,debug=True)

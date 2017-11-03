@@ -38,8 +38,16 @@
         });
       }
 
+      function getClock(){
+        $.ajax({url:"/clock", success:function(result){
+          console.log(result);
+          $("#clock").val(result);
+          }
+        });
+      }
       $(document).ready(function(){
-        setInterval(getLaserResponse(), 5000);
+        setInterval(getLaserResponse, 1000);
+        setInterval(getClock, 30000);
       });
     </script>
   </head>
@@ -81,6 +89,9 @@
           <h1 class="mt-5">Laser Controls</h1>
           <p class="lead">Enter the command and click - Send To Laser</p>
           <form class="form-horizontal" action="/sendToLaser" method="post">
+            <div class="row">
+              <input type="text" readonly class="form-control" name="clock" id="clock" value="">
+            </div>  
             <div class="form-group">
               <label class="control-label col-sm-2" for="msg">Message:</label>
               <input type="text" class="form-control" id="msg" placeholder="Enter message" name="msg">
@@ -102,14 +113,14 @@
           </form>        
         </div>
       </div>
-      <div class="row">
-        <Label>Laser Response</Label><input type="text" readonly class="form-control-plaintext" name="laserResponse">
-      </div>  
-      <div class="row">
-          <Label>Last Command</Label><input type="text" readonly class="form-control-plaintext" name="lastCommand" value={{lastCommand}}>
-      </div>  
-      <div class="row">
-          <Label>Laser Port</Label><input type="text" readonly class="form-control-plaintext" name="laserPort" value={{laserPort}}>
+      <div class="form-group">
+        <div class="row">
+          <Label>Laser Response</Label><input type="text" readonly class="form-control" name="laserResponse" id="laserResponse" value="">
+        </div>  
+        <div class="row">
+          <Label>Last Command</Label><input type="text" readonly class="form-control" name="lastCommand" value="{{lastCommand}}">
+          <Label>Laser Port</Label><input type="text" readonly class="form-control" name="laserPort" value="{{laserPort}}">
+        </div>
       </div>
        
     </div>

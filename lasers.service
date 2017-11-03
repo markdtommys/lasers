@@ -1,0 +1,11 @@
+[Service]
+WorkingDirectory=/home/pi/github/lasers
+ExecStart=/usr/bin/python /home/pi/github/lasers/laserServerOp.py
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=lasers
+User=root
+Group=root
+[Install]
+WantedBy=multi-user.target
