@@ -1,5 +1,6 @@
 import argparse
 import importlib
+import os
 import time
 import serial
 import sys
@@ -19,7 +20,10 @@ class LaserDisplayController(object):
         """
         format the command before it is sent down the serial interface
         """
-        displaytextmaxlen = 25
+        if displaymode == 'M':
+            displaytextmaxlen = 256
+        else:
+            displaytextmaxlen = 30
         displaytext = displaytext.upper()
         allowedchars = [' ', '.', '!', '?', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
@@ -65,6 +69,19 @@ class LaserDisplayController(object):
             return 'ERROR unable to read from the serial interface - ' + str(error)
 
 
+def list_available_scripts(pathtoscripts):
+    """
+    go to the scripts folder and look at its contents
+    return a list of all the names of the scripts excluding file extensions
+    """
+    availablescripts = []
+    scriptsdircontents = os.listdir(pathtoscripts)
+    for i in scriptsdircontents:
+        if i.endswith('.py') and not i.endswith('.pyc') and i != '__init__.py':
+            availablescripts.append(i.rstrip('.py'))
+    return availablescripts
+
+
 def run_custom_display_script(scriptname):
     """
     provide a name of a script in the inputs folder excluding the .py extension
@@ -74,6 +91,7 @@ def run_custom_display_script(scriptname):
     mod = importlib.import_module('laserinputs.' + scriptname)
     resultstring = mod.performactions()
     return resultstring
+
 
 def main():
     """
@@ -88,7 +106,7 @@ def main():
     parser.add_argument('-a', dest='animation', help='animation to select', default='S')
     group.add_argument('-i', dest='input', help='custom input, must be the name of a script in the inputs folder')
     group.add_argument('-t', dest='displaytext', help='text to display')
-    parser.add_argument('-de', action='store_true' dest='debug', help='send 1 command then constantly listen for messages on the serial interface')
+    parser.add_argument('-de', action='store_true', dest='debug', help='send 1 command then constantly listen for messages on the serial interface')
     args = parser.parse_args()
 
     if args.input:
