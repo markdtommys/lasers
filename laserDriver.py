@@ -72,29 +72,27 @@ class LaserDisplayController(object):
         except Exception as error:
             return 'ERROR unable to read from the serial interface - ' + str(error)
 
-
-def list_available_scripts(pathtoscripts):
-    """
-    go to the scripts folder and look at its contents
-    return a list of all the names of the scripts excluding file extensions
-    """
-    availablescripts = []
-    scriptsdircontents = os.listdir(pathtoscripts)
-    for i in scriptsdircontents:
-        if i.endswith('.py') and not i.endswith('.pyc') and i != '__init__.py':
-            availablescripts.append(i.rstrip('.py'))
-    return availablescripts
-
+def list_available_scripts():
+        """
+        go to the scripts folder and look at its contents
+        return a list of all the names of the scripts excluding file extensions
+        """
+        availablescripts = []
+        scriptsdircontents = os.listdir('laserinputs')
+        for i in scriptsdircontents:
+            if i.endswith('.py') and not i.endswith('.pyc') and i != '__init__.py':
+                availablescripts.append(i.rstrip('.py'))
+        return availablescripts
 
 def run_custom_display_script(scriptname):
-    """
-    provide a name of a script in the inputs folder excluding the .py extension
-    this function will import the module and run the scripts performactions function
-    it will return the results of that function as a string
-    """
-    mod = importlib.import_module('laserinputs.' + scriptname)
-    resultstring = mod.performactions()
-    return resultstring
+        """
+        provide a name of a script in the inputs folder excluding the .py extension
+        this function will import the module and run the scripts performactions function
+        it will return the results of that function as a string
+        """
+        mod = importlib.import_module('laserinputs.' + scriptname)
+        resultstring = mod.performactions()
+        return resultstring
 
 
 def main():

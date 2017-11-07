@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from laserDriver import LaserDisplayController
+from laserDriver import LaserDisplayController, list_available_scripts, run_custom_display_script
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 import time
@@ -23,6 +23,7 @@ laserMode=""
 laserSize=""
 laserCmd=""
 laserResponse="xXx Test laserResponse xXx"
+laserServices = list_available_scripts()
 
 def read_laser_function():
     global laserResponse   
@@ -55,7 +56,11 @@ atexit.register(lambda: scheduler.shutdown())
 
 @app.route('/', methods=['GET', 'POST'])
 def form():
-    return render_template('lasers.html',laserPort=laserPort) 
+    return render_template('lasers.html',laserPort=laserPort,laserServices=laserServices) 
+
+@app.route('/mobile', methods=['GET', 'POST'])
+def formMobile():
+    return render_template('lasersMobile.html',laserPort=laserPort,laserServices=laserServices) 
 
 @app.route('/laserResponse', methods=['GET']) 
 def lastResponse():
@@ -75,7 +80,7 @@ def sendToLaser():
     laserCmd = laserMode + laserSize + laserText
     lc.format_command(laserMode,laserSize,laserText)
     lc.send_command()
-    return render_template('lasers.html', lastCommand=laserCmd, laserPort=laserPort, laserText=laserText, laserMode=laserMode, laserSize=laserSize)
+    return render_template(request.form['responseTemplate'], lastCommand=laserCmd, laserPort=laserPort, laserText=laserText, laserMode=laserMode, laserSize=laserSize,laserServices=laserServices)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0',port=5000,debug=True)
