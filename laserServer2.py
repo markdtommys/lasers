@@ -77,7 +77,14 @@ def sendToLaser():
     laserText = request.form['msg']
     laserMode = request.form['mode'] 
     laserSize = request.form['size'] 
+
+    if ( laserMode == 'R'):
+        laserMode='M'
+        laserSize='25'
+        laserText = run_custom_display_script(laserText)
+
     laserCmd = laserMode + laserSize + laserText
+
     lc.format_command(laserMode,laserSize,laserText)
     lc.send_command()
     return render_template(request.form['responseTemplate'], lastCommand=laserCmd, laserPort=laserPort, laserText=laserText, laserMode=laserMode, laserSize=laserSize,laserServices=laserServices)

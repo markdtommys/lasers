@@ -43,21 +43,27 @@ void setup()
   
   // initialize serial:
   Serial.begin(9600);
-  // reserve 200 bytes for the inputString:
-  inputString.reserve(200);
+  // reserve 256 bytes for the inputString:
+  inputString.reserve(256);
 }
 
 
-void letterEffect()
+
+// Start with one string and mutate to final string
+void letterEffect(String s)
 {  
-  String dyn = "MOTSYT";
-  String lu  = "TOMMYS";
+  int j = 0;
+  String dyn = s;
+  String lu  = s;
+  for (int i = s.length()-1; i>=0; i--) {
+    dyn[j++]= lu[i];
+  }
   int w = Drawing::stringAdvance(lu);
   laser.setScale(3048./w);
   laser.setOffset(2048,2048);
   for (int i = 0;i<35;i++) {
     Drawing::drawString(dyn, -w/2,0,4);
-    for (int i = 0;i<8;i++){ 
+    for (int i = 0;i<s.length();i++){ 
       if (lu[i]>dyn[i]) dyn[i]++;
       if (lu[i]<dyn[i]) dyn[i]--;
     }
@@ -71,8 +77,9 @@ void letterEffect()
   laser.resetClipArea();
 }
 
-void presents() {
-  String str = "FRIKIN";
+// Fixed position text starts small and grows
+void presents(String s) {
+  String str = s;
   int w = Drawing::stringAdvance(str);
   laser.setScale(3048./w);
   laser.setOffset(2048,2048);
@@ -84,9 +91,10 @@ void presents() {
   }
 }
 
-void arduino()
+// Rotate Horizontal
+void horizSpin(String s)
 {
-  String str = "ARDUINO";
+  String str = s;
   int w = Drawing::stringAdvance(str);
   laser.setScale(0.5);
   laser.setOffset(1024,1024);
@@ -104,6 +112,45 @@ void arduino()
   laser.setEnable3D(false);
 }
 
+// Rotate Vertical
+void vertSpin(String s)
+{
+  String str = s;
+  int w = Drawing::stringAdvance(str);
+  laser.setScale(0.5);
+  laser.setOffset(1024,1024);
+  int count = 360/4;
+  int angle = 45;
+  for (int i = 0;i<count;i++) {
+    Matrix3 world;
+    world = Matrix3::rotateY(angle % 360);
+    laser.setEnable3D(true);
+    laser.setMatrix(world);
+    laser.setZDist(2000);
+    Drawing::drawString(str,-w/2,-500, 1);
+    angle += 8;
+  }
+  laser.setEnable3D(false);
+}
+
+// Static Text
+// 17 Characters at 0.25
+void staticText(String s1, String s2, String s3)
+{
+  int w1 = Drawing::stringAdvance(s1);
+  int w2 = Drawing::stringAdvance(s2);
+  int w3 = Drawing::stringAdvance(s3);
+  laser.setScale(0.25);
+
+  for (int i = 0;i<99;i++) {
+    laser.setOffset(2048,2048 + 600);
+    Drawing::drawString(s1,-w1/2,-500, 1);
+    laser.setOffset(2048,2048);
+    Drawing::drawString(s2,-w2/2,-500, 1);
+  }
+}
+
+// Rotate LASER Horiz and SHOW Vert
 void laserShow()
 {
   String str = "LASER";
@@ -159,6 +206,8 @@ void countDown() {
     }
   }
 }
+
+// Draw plane and fly across 
 void drawPlane()
 {
   int count = 180;
@@ -176,7 +225,6 @@ void drawPlane()
     scale += 0.01;
   }
 }
-
 
 // draws text as scroller from right to left
 void drawScroller(String s, float scale = 0.5, int offsetY = 2048, int speed = 100)
@@ -251,11 +299,20 @@ String getLaserMode() {
     case 'M':
       res = "Marquee";
       break;
+    case 'P':
+      res = "Presents";
+      break;
     case 'S':
       res = "Static";
       break;
     case 'F':
       res = "Flashing";
+      break;
+    case 'H':
+      res = "Horizontal Spin";
+      break;
+    case 'V':
+      res = "Vertical Spin";
       break;
     case 'X':
       res = "Off";
@@ -302,6 +359,11 @@ void serialEvent() {
    laserMsg      : text to display 
    laserSize     : size to display text or animation (0-99)
    laserInterval : Repeat interval mSecs
+
+
+String animations[17] = {"OFF","LETTEREFFECT","PRESENTS","ARDUINO","LASERSHOW","PLANE","LOGO","WELOVE"
+                        ,"ARDUINO2DROTATE","WHATABOUT3D","ROTATECUBE","BIKE"
+                        ,"GLOBE","ARDUINO3D","OBJECTS","JUMPINGTEXT","COUNTDOWN"};
 */
 void acceptCommands() {
     // print the string when a newline arrives:
@@ -322,15 +384,22 @@ void acceptCommands() {
           laserAnim = 5;
         } else if ( laserAnimStr == "BIKE" ) {
           laserAnim = 11;
-        } else if ( laserAnimStr == "ARDUINO3D" ) {
-          laserAnim = 13;
+        } else if ( laserAnimStr == "LASERSHOW" ) {
+          laserAnim = 4;
+        } else if ( laserAnimStr == "COUNTDOWN" ) {
+          laserAnim = 16;
         } // Unknown animations leave the animation selected unchanged
 
         laserMode = laserCommand;
         Serial.println("DEBUG Laser mode set to " + getLaserMode() + " " + getLaserAnimation() + " selected");
         laserMsg="";
         break;
-      case 'M':
+      case 'F': // Flashing
+      case 'H': // Horizontal spin
+      case 'M': // Marquee
+      case 'P': // Presents
+      case 'S': // Statis
+      case 'V': // Vertical spin
         setLaserSize();
         laserMode = laserCommand;
         Serial.println("DEBUG Laser mode set to " + getLaserMode());
@@ -339,26 +408,6 @@ void acceptCommands() {
         {
           laserMsg = inputString.substring(3);
           laserAnim = 0;
-        }
-        break;
-      case 'S':
-        setLaserSize();
-        laserMode = laserCommand;
-        Serial.println("DEBUG Laser mode set to " + getLaserMode());
-        // Only change the message if a new one is present
-        if ( inputString.substring(3).length() > 1 )
-        {
-          laserMsg = inputString.substring(3);
-        }
-        break;
-      case 'F':
-        setLaserSize();
-        laserMode = laserCommand;
-        Serial.println("DEBUG Laser mode set to " + getLaserMode());
-        // Only change the message if a new one is present
-        if ( inputString.substring(3).length() > 1 )
-        {
-          laserMsg = inputString.substring(3);
         }
         break;
       case 'X':
@@ -419,11 +468,30 @@ void loop() {
   if ( repeat )
   {
     if ( laserMsg.length() > 0 ) {
+      switch( laserMode )
+      {
+        case 'M':
+          drawScroller(String(laserMsg),laserSize/100.0,2048,100);
+          break;
+        case 'H':
+          horizSpin(String(laserMsg));
+          break;
+        case 'V':
+          vertSpin(String(laserMsg));
+          break;
+        case 'P':
+          presents(String(laserMsg));
+          break;
+        case 'S':
+          staticText(String(laserMsg),String(laserMsg),String(laserMsg));
+          break;
+        case 'F':
+          letterEffect(String(laserMsg));
+          break;
+        default:
+          break;
+      }
     
-      drawScroller(String(laserMsg),laserSize/100.0,2048,100);
-    
-      //drawScroller(String("THIS PROJECT IS AVAILABLE ON INSTRUCTABLES.COM"),0.5,2048,100);
-      //drawScroller(String(myteststring),0.25,2048,100);
     } else {
       switch( laserAnim )
       {
@@ -440,13 +508,12 @@ void loop() {
           //arduino();             // index 3 type Animation name ARDUINO
           break;
         case 4:
-          //laserShow();           // index 4 type Animation name LASERSHOW
+          laserShow();           // index 4 type Animation name LASERSHOW
           break;
         case 5:
           drawPlane();           // index 5 type Animation name PLANE
           break;
         case 6:
-         //countDown();           // index 6 type Animation name COUNTDOWN
           break;
         case 7:
       
@@ -460,8 +527,24 @@ void loop() {
         case 10:
       
           break;
-    
+        case 11:
       
+          break;
+        case 12:
+      
+          break;
+        case 13:
+      
+          break;
+        case 14:
+      
+          break;
+        case 15:
+      
+          break;
+        case 16:
+          countDown(); 
+          break;
         default:
           // Do nothing
           break;
