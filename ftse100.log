@@ -1,0 +1,12 @@
+--2017-11-08 08:29:43--  https://finance.google.co.uk/finance?q=INDEXFTSE%3AUKX
+Resolving finance.google.co.uk (finance.google.co.uk)... 216.58.208.164, 2a00:1450:4009:80d::2004
+Connecting to finance.google.co.uk (finance.google.co.uk)|216.58.208.164|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘ftse100.html’
+
+     0K .......... .......... .......... .......... ..........  377K
+    50K .......... .......... .......... ........              1.02M=0.2s
+
+2017-11-08 08:29:45 (524 KB/s) - ‘ftse100.html’ saved [91100]
+
