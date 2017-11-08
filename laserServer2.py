@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 from laserDriver import LaserDisplayController, list_available_scripts, run_custom_display_script
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
+import RPi.GPIO as GPIO 
 import time
 import atexit
 
@@ -17,6 +18,18 @@ try:
 except :
   laserPort = '/dev/ttyACM1'
   lc = LaserDisplayController(laserPort, 9600)
+
+"""
+  Configure GPIO in BCM mode and BCM5 as an output
+  (This is connected to the Green LED in the power button)
+"""
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(6, GPIO.OUT)
+"""
+  Turn the Green LED on - Indicates Web server is ready
+"""
+GPIO.output(6, GPIO.LOW)
 
 laserText=""
 laserMode=""
@@ -42,7 +55,11 @@ scheduler.add_job(
     replace_existing=True)
 
 # Shut down the scheduler when exiting the app
-atexit.register(lambda: scheduler.shutdown())
+@atexit.register
+def goodbye():
+    scheduler.shutdown()
+    GPIO.output(6, GPIO.HIGH)
+    GPIO.cleanup()
 
 """
   To run this 

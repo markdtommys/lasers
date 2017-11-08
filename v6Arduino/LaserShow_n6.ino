@@ -102,11 +102,11 @@ void horizSpin(String s)
   int angle = 45;
   for (int i = 0;i<count;i++) {
     Matrix3 world;
-    world = Matrix3::rotateX(angle % 360);
+    world = Matrix3::rotateY(angle % 360);
     laser.setEnable3D(true);
     laser.setMatrix(world);
     laser.setZDist(2000);
-    Drawing::drawString(str,-w/2,-500, 1);
+    Drawing::drawString(str,-w/2,-500);
     angle += 8;
   }
   laser.setEnable3D(false);
@@ -123,30 +123,41 @@ void vertSpin(String s)
   int angle = 45;
   for (int i = 0;i<count;i++) {
     Matrix3 world;
-    world = Matrix3::rotateY(angle % 360);
+    world = Matrix3::rotateX(angle % 360);
     laser.setEnable3D(true);
     laser.setMatrix(world);
     laser.setZDist(2000);
-    Drawing::drawString(str,-w/2,-500, 1);
+    Drawing::drawString(str,-w/2,-500);
     angle += 8;
   }
   laser.setEnable3D(false);
 }
 
-// Static Text
+// Static 2 Line Text
 // 17 Characters at 0.25
-void staticText(String s1, String s2, String s3)
+void static2Line(String s1, String s2)
 {
   int w1 = Drawing::stringAdvance(s1);
   int w2 = Drawing::stringAdvance(s2);
-  int w3 = Drawing::stringAdvance(s3);
-  laser.setScale(0.25);
+  laser.setScale(0.125);
 
   for (int i = 0;i<99;i++) {
     laser.setOffset(2048,2048 + 600);
-    Drawing::drawString(s1,-w1/2,-500, 1);
+    Drawing::drawString(s1,-w1/2,-500);
     laser.setOffset(2048,2048);
-    Drawing::drawString(s2,-w2/2,-500, 1);
+    Drawing::drawString(s2,-w2/2,-500);
+  }
+}
+
+// Static Text
+void staticText(String s1)
+{
+  int w1 = Drawing::stringAdvance(s1);
+  laser.setScale(0.25);
+
+  for (int i = 0;i<99;i++) {
+    laser.setOffset(2048,2048);
+    Drawing::drawString(s1,-w1/2,-500);
   }
 }
 
@@ -305,6 +316,9 @@ String getLaserMode() {
     case 'S':
       res = "Static";
       break;
+    case '2':
+      res = "2 Line";
+      break;
     case 'F':
       res = "Flashing";
       break;
@@ -398,7 +412,8 @@ void acceptCommands() {
       case 'H': // Horizontal spin
       case 'M': // Marquee
       case 'P': // Presents
-      case 'S': // Statis
+      case 'S': // Static
+      case '2': // 2 Line
       case 'V': // Vertical spin
         setLaserSize();
         laserMode = laserCommand;
@@ -468,6 +483,7 @@ void loop() {
   if ( repeat )
   {
     if ( laserMsg.length() > 0 ) {
+      int commaAt = laserMsg.indexOf(',');
       switch( laserMode )
       {
         case 'M':
@@ -483,7 +499,14 @@ void loop() {
           presents(String(laserMsg));
           break;
         case 'S':
-          staticText(String(laserMsg),String(laserMsg),String(laserMsg));
+          staticText(String(laserMsg));
+          break;
+        case '2':
+          if ( commaAt > 0 ) {
+            String a = laserMsg.substring(0,commaAt);
+            String b = laserMsg.substring(commaAt+1);
+            static2Line(a,b);
+          }
           break;
         case 'F':
           letterEffect(String(laserMsg));

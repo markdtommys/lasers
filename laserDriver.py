@@ -27,7 +27,7 @@ class LaserDisplayController(object):
         displaytext = displaytext.upper()
         allowedchars = [' ', '.', '!', '?', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
-                        'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+                        'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ',']
         newdisplaytextlist = []
         for character in displaytext:
             if character in allowedchars:
@@ -35,7 +35,7 @@ class LaserDisplayController(object):
         displaytextformatted = ''.join(newdisplaytextlist)
         if len(displaytextformatted) > displaytextmaxlen:
             displaytextformatted = displaytextformatted[:displaytextmaxlen]
-        modes = {'X':'off','A':'named animation','S':'static', 'M':'marquee', 'F':'flash','P':'presents','H':'horizontalSpin','V':'verticalSpin'}
+        modes = {'X':'off','A':'named animation','2':'2line','S':'static', 'M':'marquee', 'F':'flash','P':'presents','H':'horizontalSpin','V':'verticalSpin'}
         animations = ['PLANE','BIKE','BUILDING','ARDUINO','LASERSHOW','COUNTDOWN']
         if displaymode not in modes.keys():
             return 'invalid display mode selected'
