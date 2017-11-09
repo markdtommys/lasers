@@ -36,7 +36,7 @@ class LaserDisplayController(object):
         if len(displaytextformatted) > displaytextmaxlen:
             displaytextformatted = displaytextformatted[:displaytextmaxlen]
         modes = {'X':'off','A':'named animation','2':'2line','S':'static', 'M':'marquee', 'F':'flash','P':'presents','H':'horizontalSpin','V':'verticalSpin'}
-        animations = ['PLANE','BIKE','BUILDING','ARDUINO','LASERSHOW','COUNTDOWN']
+        animations = ['PLANE','ARDUINO','LASERSHOW','COUNTDOWN','CIRCLEINSQUARE']
         if displaymode not in modes.keys():
             return 'invalid display mode selected'
         if displaymode == 'A' and displaytext not in animations:

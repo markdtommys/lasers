@@ -199,6 +199,22 @@ void circle() {
   laser.off();
 }
 
+// draw a circle in a square
+void drawCircleInSquare() {
+  for (int i = 0;i<100;i++) {
+    laser.setScale(1);
+    laser.setOffset(2048,2048);
+    laser.sendto(-2047,-2047);
+    laser.on();
+    laser.sendto(2047,-2047);
+    laser.sendto(2047,2047);
+    laser.sendto(-2047,2047);
+    laser.sendto(-2047,-2047);
+    laser.off();
+    circle();
+  }
+}
+
 // Draw circle and count down from 9 to 1
 void countDown() {
   laser.setScale(1);
@@ -255,7 +271,8 @@ void drawScroller(String s, float scale = 0.5, int offsetY = 2048, int speed = 1
   laser.setOffset(0,offsetY);
   laser.setScale(scale);
   int scrollX = 0;
-  for (int c = 0; c < s.length() + maxChar; c++) {
+  int slen = s.length();
+  for (int c = 0; c < slen + maxChar; c++) {
     int currentScroll = Drawing::advance(buffer[0]);
     while (scrollX < currentScroll) {
       long time = millis();
@@ -275,13 +292,12 @@ void drawScroller(String s, float scale = 0.5, int offsetY = 2048, int speed = 1
       scrollX += speed / scale;
       long elapsed = millis() - time;
       if (elapsed < 50) { delay(50-elapsed); }
-
     }
     scrollX -= currentScroll;
     for (int k = 0;k<maxChar-1;k++) {
       buffer[k] = buffer[k+1];
     }
-    if (c<s.length()) {
+    if (c<slen) {
       buffer[maxChar-1] = s[c];
     } else{
       buffer[maxChar-1] = ' ';
@@ -289,9 +305,9 @@ void drawScroller(String s, float scale = 0.5, int offsetY = 2048, int speed = 1
   }
 }
 
-String animations[17] = {"OFF","LETTEREFFECT","PRESENTS","ARDUINO","LASERSHOW","PLANE","LOGO","WELOVE"
+String animations[18] = {"OFF","LETTEREFFECT","PRESENTS","ARDUINO","LASERSHOW","PLANE","LOGO","WELOVE"
                         ,"ARDUINO2DROTATE","WHATABOUT3D","ROTATECUBE","BIKE"
-                        ,"GLOBE","ARDUINO3D","OBJECTS","JUMPINGTEXT","COUNTDOWN"};
+                        ,"GLOBE","ARDUINO3D","OBJECTS","JUMPINGTEXT","COUNTDOWN","CIRCLEINSQUARE"};
                               
 // Return the text version of the current laser animation
 String getLaserAnimation() {
@@ -375,9 +391,9 @@ void serialEvent() {
    laserInterval : Repeat interval mSecs
 
 
-String animations[17] = {"OFF","LETTEREFFECT","PRESENTS","ARDUINO","LASERSHOW","PLANE","LOGO","WELOVE"
+String animations[18] = {"OFF","LETTEREFFECT","PRESENTS","ARDUINO","LASERSHOW","PLANE","LOGO","WELOVE"
                         ,"ARDUINO2DROTATE","WHATABOUT3D","ROTATECUBE","BIKE"
-                        ,"GLOBE","ARDUINO3D","OBJECTS","JUMPINGTEXT","COUNTDOWN"};
+                        ,"GLOBE","ARDUINO3D","OBJECTS","JUMPINGTEXT","COUNTDOWN","CIRCLEINSQUARE"};
 */
 void acceptCommands() {
     // print the string when a newline arrives:
@@ -402,6 +418,8 @@ void acceptCommands() {
           laserAnim = 4;
         } else if ( laserAnimStr == "COUNTDOWN" ) {
           laserAnim = 16;
+        } else if ( laserAnimStr == "CIRCLEINSQUARE" ) {
+          laserAnim = 17;
         } // Unknown animations leave the animation selected unchanged
 
         laserMode = laserCommand;
@@ -567,6 +585,9 @@ void loop() {
           break;
         case 16:
           countDown(); 
+          break;
+        case 17:
+          drawCircleInSquare(); 
           break;
         default:
           // Do nothing
