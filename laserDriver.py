@@ -35,18 +35,31 @@ class LaserDisplayController(object):
         displaytextformatted = ''.join(newdisplaytextlist)
         if len(displaytextformatted) > displaytextmaxlen:
             displaytextformatted = displaytextformatted[:displaytextmaxlen]
-        modes = {'X':'off','A':'named animation','2':'2line','S':'static', 'M':'marquee', 'F':'flash','P':'presents','H':'horizontalSpin','V':'verticalSpin'}
-        animations = ['PLANE','ARDUINO','LASERSHOW','COUNTDOWN','CIRCLEINSQUARE']
+        modes = {'X':'off','I':'repeat interval','A':'named animation','2':'2line','S':'static', 'M':'marquee', 'F':'merge','P':'presents','H':'horizontalSpin','V':'verticalSpin'}
+        animations = ['PLANE','LASERSHOW','COUNTDOWN','CIRCLEINSQUARE']
         if displaymode not in modes.keys():
             return 'invalid display mode selected'
         if displaymode == 'A' and displaytext not in animations:
             return 'invalid animation selected'
-        if len(displaysize) < 2:
-            displaysizeformatted = '0' + displaysize
+        if displaymode != 'I':
+            if len(displaysize) < 2:
+                displaysizeformatted = '0' + displaysize
+            else:
+                displaysizeformatted = displaysize
         else:
-            displaysizeformatted = displaysize
+            displaysizeformatted = ''
         self.command = displaymode + displaysizeformatted + displaytextformatted + '\n'
         return 'command format OK'
+
+    def get_command(self):
+        """
+        get the command
+        """
+        if self.command:
+            cmd = self.command
+        else:
+            cmd = "No command generated"
+        return cmd
 
     def send_command(self):
         """
@@ -94,7 +107,6 @@ def run_custom_display_script(scriptname):
         resultstring = mod.performactions()
         return resultstring
 
-
 def main():
     """
     command line interface to the laser controller.
@@ -103,11 +115,12 @@ def main():
     parser = argparse.ArgumentParser(description='command line app to send commands to the laser projector')
     group = parser.add_mutually_exclusive_group()
     parser.add_argument('-b', dest='baudrate', help='set baudrate, if not specified default is 9600 baud', type=int, default=9600)
-    parser.add_argument('-d', dest='serialdevice', help='specify serial device, default is /dev/ttyACM1', default='/dev/ttyACM1')
-    parser.add_argument('-s', dest='displaysize', help='size of the display', default='5')
-    parser.add_argument('-a', dest='animation', help='animation to select', default='S')
+    parser.add_argument('-d', dest='serialdevice', help='specify serial device, default is auto', default='auto')
+    parser.add_argument('-s', dest='displaysize', help='size of the display', default='25')
+    parser.add_argument('-m', dest='mode', help='mode to select', default='M')
     group.add_argument('-i', dest='input', help='custom input, must be the name of a script in the inputs folder')
     group.add_argument('-t', dest='displaytext', help='text to display')
+    group.add_argument('-in', dest='interval', help='interval between repeats')
     parser.add_argument('-de', action='store_true', dest='debug', help='send 1 command then constantly listen for messages on the serial interface')
     args = parser.parse_args()
 
@@ -115,16 +128,32 @@ def main():
         lasertext = run_custom_display_script(args.input)
     elif args.displaytext:
         lasertext = args.displaytext
+    elif args.interval:
+        lasertext = args.interval
     else:
         parser.print_help()
         sys.exit(1)
-    lc = LaserDisplayController(args.serialdevice, args.baudrate)
-    lc.format_command(args.animation, args.displaysize, lasertext)
-    lc.send_command()
+
+    if args.serialdevice == 'auto':
+        try:
+            laserPort = '/dev/ttyACM0'
+            lc = LaserDisplayController(laserPort, args.baudrate)
+        except :
+            laserPort = '/dev/ttyACM1'
+            lc = LaserDisplayController(laserPort, args.baudrate)
+    else:
+        lc = LaserDisplayController(args.serialdevice, args.baudrate)
+    res = lc.format_command(args.mode, args.displaysize, lasertext)
+    print "Format command : " + res
+    res = lc.send_command()
+    print "Send Command : " + res
+    cmd = lc.get_command()
+    print("Sending command : " + cmd)
     if args.debug:
         while 1:
             response = lc.read_response()
-            print(response)
+            if len(response) > 0:
+                print(response)
     else:
         response = lc.read_response()
         print(response)

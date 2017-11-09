@@ -63,7 +63,8 @@ void letterEffect(String s)
   laser.setOffset(2048,2048);
   for (int i = 0;i<35;i++) {
     Drawing::drawString(dyn, -w/2,0,4);
-    for (int i = 0;i<s.length();i++){ 
+    int slen = s.length();
+    for (int i = 0;i<slen;i++){ 
       if (lu[i]>dyn[i]) dyn[i]++;
       if (lu[i]<dyn[i]) dyn[i]--;
     }
@@ -96,7 +97,7 @@ void horizSpin(String s)
 {
   String str = s;
   int w = Drawing::stringAdvance(str);
-  laser.setScale(0.5);
+  laser.setScale(laserSize/100.0);
   laser.setOffset(1024,1024);
   int count = 360/4;
   int angle = 45;
@@ -117,7 +118,7 @@ void vertSpin(String s)
 {
   String str = s;
   int w = Drawing::stringAdvance(str);
-  laser.setScale(0.5);
+  laser.setScale(laserSize/100.0);
   laser.setOffset(1024,1024);
   int count = 360/4;
   int angle = 45;
@@ -139,7 +140,7 @@ void static2Line(String s1, String s2)
 {
   int w1 = Drawing::stringAdvance(s1);
   int w2 = Drawing::stringAdvance(s2);
-  laser.setScale(0.125);
+  laser.setScale(laserSize/100.0);
 
   for (int i = 0;i<99;i++) {
     laser.setOffset(2048,2048 + 600);
@@ -153,7 +154,7 @@ void static2Line(String s1, String s2)
 void staticText(String s1)
 {
   int w1 = Drawing::stringAdvance(s1);
-  laser.setScale(0.25);
+  laser.setScale(laserSize/100.0);
 
   for (int i = 0;i<99;i++) {
     laser.setOffset(2048,2048);
@@ -336,7 +337,7 @@ String getLaserMode() {
       res = "2 Line";
       break;
     case 'F':
-      res = "Flashing";
+      res = "Merge";
       break;
     case 'H':
       res = "Horizontal Spin";

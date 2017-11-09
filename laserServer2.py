@@ -20,7 +20,7 @@ except :
   lc = LaserDisplayController(laserPort, 9600)
 
 """
-  Configure GPIO in BCM mode and BCM5 as an output
+  Configure GPIO in BCM mode and BCM6 as an output
   (This is connected to the Green LED in the power button)
 """
 GPIO.setmode(GPIO.BCM)
@@ -32,10 +32,13 @@ GPIO.setup(6, GPIO.OUT)
 GPIO.output(6, GPIO.LOW)
 
 laserText=""
-laserMode=""
-laserSize=""
+laserMode="S"
+laserSize="25"
 laserCmd=""
-laserResponse="xXx Test laserResponse xXx"
+laserScript=""
+laserRepeat=False
+laserInterval="3000"
+laserResponse="xXx laserResponse xXx"
 laserServices = list_available_scripts()
 
 def read_laser_function():
@@ -45,13 +48,29 @@ def read_laser_function():
         print "DEBUG read_laser_function : " + response
         laserResponse = response
 
+def repeat_service_call():
+    global laserMode,laserSize,laserCmd
+    if ( laserRepeat ):
+        laserText = run_custom_display_script(laserScript)
+        laserCmd = laserMode + laserSize + laserText
+        res = lc.format_command(laserMode,laserSize,laserText)
+        print "DEBUG repeat_service_call.format : " + res
+        res = lc.send_command()
+        print "DEBUG repeat_service_call.send : " + res
+        
 scheduler = BackgroundScheduler()
 scheduler.start()
 scheduler.add_job(
     func=read_laser_function,
-    trigger=IntervalTrigger(seconds=5),
+    trigger=IntervalTrigger(seconds=3),
     id='read_laser_job',
-    name='Read laser every five seconds',
+    name='Read laser every three seconds',
+    replace_existing=True)
+scheduler.add_job(
+    func=repeat_service_call,
+    trigger=IntervalTrigger(seconds=30),
+    id='repeat_service_call_job',
+    name='Repeat last service cript every thirty seconds',
     replace_existing=True)
 
 # Shut down the scheduler when exiting the app
@@ -91,20 +110,26 @@ def clock():
 
 @app.route('/sendToLaser', methods=['GET', 'POST'])
 def sendToLaser():
+    global laserInterval,laserRepeat,laserScript,laserMode,laserSize,laserCmd
     laserText = request.form['msg']
     laserMode = request.form['mode'] 
-    laserSize = request.form['size'] 
+    laserSize = request.form['size']
 
-    if ( laserMode == 'R'):
-        laserMode='M'
-        laserSize='25'
-        laserText = run_custom_display_script(laserText)
+    if ( laserMode == 'I' ):
+        laserInterval = laserText 
+    elif ( laserMode == 'R'):
+        laserRepeat=True
+        laserMode=request.form['smode']
+        laserScript = laserText
+        laserText = run_custom_display_script(laserScript)
+    else:
+        laserRepeat=False
 
     laserCmd = laserMode + laserSize + laserText
 
     lc.format_command(laserMode,laserSize,laserText)
     lc.send_command()
-    return render_template(request.form['responseTemplate'], lastCommand=laserCmd, laserPort=laserPort, laserText=laserText, laserMode=laserMode, laserSize=laserSize,laserServices=laserServices)
+    return render_template(request.form['responseTemplate'], laserInterval=laserInterval, lastCommand=laserCmd, laserPort=laserPort, laserText=laserText, laserMode=laserMode, laserSize=laserSize, laserServices=laserServices)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0',port=5000,debug=True)
