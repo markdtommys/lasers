@@ -21,11 +21,11 @@ class LaserDisplayController(object):
         format the command before it is sent down the serial interface
         """
         if displaymode == 'M':
-            displaytextmaxlen = 256
+            displaytextmaxlen = 128
         else:
             displaytextmaxlen = 30
         displaytext = displaytext.upper()
-        allowedchars = [' ', ':','(',')','/','.', '!', '?', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        allowedchars = [' ', ':','[',']','/','.', '!', '?', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
                         'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ',']
         newdisplaytextlist = []
@@ -36,7 +36,7 @@ class LaserDisplayController(object):
         if len(displaytextformatted) > displaytextmaxlen:
             displaytextformatted = displaytextformatted[:displaytextmaxlen]
         modes = {'X':'off','I':'repeat interval','A':'named animation','2':'2line','S':'static', 'M':'marquee', 'F':'merge','P':'presents','H':'horizontalSpin','V':'verticalSpin'}
-        animations = ['PLANE','LASERSHOW','COUNTDOWN','CIRCLEINSQUARE']
+        animations = ['PLANE','BUILDING','LASERSHOW','COUNTDOWN','CIRCLEINSQUARE']
         if displaymode not in modes.keys():
             return 'invalid display mode selected'
         if displaymode == 'A' and displaytext not in animations:
@@ -49,6 +49,7 @@ class LaserDisplayController(object):
         else:
             displaysizeformatted = ''
         self.command = displaymode + displaysizeformatted + displaytextformatted + '\n'
+        self.command = self.command.encode()
         return 'command format OK'
 
     def get_command(self):
@@ -67,7 +68,7 @@ class LaserDisplayController(object):
         """
         try:
             time.sleep(1)
-            self.seriallink.write(self.command.encode())
+            self.seriallink.write(self.command)
             return 'sent OK'
         except Exception as error:
             return 'ERROR unable to send the command - ' + str(error)

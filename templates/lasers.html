@@ -38,6 +38,30 @@
         });
       }
 
+      function getFormatResponse(){
+        $.ajax({url:"/formatResponse", success:function(result){
+          console.log(result);
+          $("#formatResponse").val(result);
+          }
+        });
+      }
+
+      function getSendResponse(){
+        $.ajax({url:"/sendResponse", success:function(result){
+          console.log(result);
+          $("#sendResponse").val(result);
+          }
+        });
+      }
+
+      function getStringSent(){
+        $.ajax({url:"/stringSent", success:function(result){
+          console.log(result);
+          $("#stringSent").val(result);
+          }
+        });
+      }
+
       function getClock(){
         $.ajax({url:"/clock", success:function(result){
           console.log(result);
@@ -48,6 +72,9 @@
       $(document).ready(function(){
         getResponsiveBreakpoint();
         setInterval(getLaserResponse, 1000);
+        setInterval(getFormatResponse, 3000);
+        setInterval(getSendResponse, 3000);
+        setInterval(getStringSent, 3000);
         setInterval(getClock, 30000);
       });
     </script>
@@ -135,11 +162,11 @@
                 <p class="lead">Enter the text, select the size and click - Send To Laser</p>
                 <div class="form-group">
                   <label class="control-label col-sm-2" for="msg">Message:</label>
-                  <input type="text" class="form-control" id="msg" minlength="1" maxlength="100" placeholder="Enter message" name="msg" value="{{laserText}}">
+                  <input type="text" class="form-control" id="msg" minlength="1" maxlength="100" placeholder="Enter message" name="msg" value="{{laserText}}" required>
                 </div>
                 <div class="form-group">
                   <label class="control-label col-sm-2" for="size">Size:</label>
-                  <input type="number" class="form-control" id="size" min="25" max="99" placeholder="Enter 25 ... 99" name="size" value="{{laserSize}}">
+                  <input type="number" class="form-control" id="size" min="25" max="99" placeholder="Enter 25 ... 99" name="size" value="{{laserSize}}" required>
                 </div>
                 <div class="form-group">
                   <label class="radio-inline active"><input type="radio" name="mode" value="M" checked=""> Marquee</label>
@@ -198,7 +225,8 @@
                 <p class="lead">Select the Animation and click - Send To Laser</p>
                 <div class="form-group">
                   <label class="control-label col-sm-2" for="msg">Animation:</label>
-                  <label class="radio active"><input type="radio" name="msg" value="PLANE" checked=""> Plane</label>
+                  <label class="radio active"><input type="radio" name="msg" value="BUILDING" checked=""> Building</label>
+                  <label class="radio"><input type="radio" name="msg" value="PLANE"> Plane</label>
                   <label class="radio"><input type="radio" name="msg" value="LASERSHOW"> Laser Show</label>
                   <label class="radio"><input type="radio" name="msg" value="CIRCLEINSQUARE"> Circle in Square</label>
                   <label class="radio"><input type="radio" name="msg" value="COUNTDOWN"> Count Down</label>
@@ -221,7 +249,7 @@
                 <p class="lead">Adjust the config click - Send To Laser</p>
                 <div class="form-group">
                   <label class="control-label col-sm-2" for="msg">Interval(mSecs):</label>
-                    <label class="radio"><input type="number" min="0" max="10000" name="msg" value="{{laserInterval}}" checked=""> {{laserInterval}}</label>
+                    <label class="radio"><input type="number" min="0" max="10000" name="msg" value="{{laserInterval}}" required> {{laserInterval}}</label>
                   <input type="hidden" class="form-control" id="mode" name="mode" value="I">
                   <input type="hidden" class="form-control" id="size" name="size" value="">
                 </div>
@@ -271,11 +299,16 @@
       <div class="form-group">
         <div class="col-lg-12 text-center">
           <div class="row">
-            <Label>Laser Response</Label><input type="text" readonly class="form-control" name="laserResponse" id="laserResponse" value="">
+            <div class="col-lg-7"><Label>Laser Response</Label><input type="text" readonly class="form-control" name="laserResponse" id="laserResponse" value=""></div>
+            <div class="col-lg-3"><Label>Format</Label><input type="text" readonly class="form-control" name="formatResponse" id="formatResponse" value=""></div>
+            <div class="col-lg-2"><Label>Send</Label><input type="text" readonly class="form-control" name="sendResponse" id="sendResponse" value=""></div>
           </div>  
           <div class="row">
-            <Label>Last Command</Label><input type="text" readonly class="form-control" name="lastCommand" value="{{lastCommand}}">
-            <Label>Laser Port</Label><input type="text" readonly class="form-control" name="laserPort" value="{{laserPort}}">
+            <div class="col-lg-6"><Label>Last Command</Label><input type="text" readonly class="form-control" name="lastCommand" value="{{lastCommand}}"></div>
+            <div class="col-lg-6"><Label>Sent Command</Label><input type="text" readonly class="form-control" name="stringSent" id="stringSent"></div>
+          </div>
+          <div class="row">
+              <Label>Laser Port</Label><input type="text" readonly class="form-control" name="laserPort" value="{{laserPort}}">
           </div>
         </div>
       </div>

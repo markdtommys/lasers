@@ -30,7 +30,7 @@ int laserCommand = 0;
 String laserMsg = "";         // a String to hold the laser message
 int laserAnim = 0;            // An int to hold the laser animation selected
 int laserSize = 25;           // An int to hold the size to display things at [0..99]
-unsigned long laserInterval = 3000; //Interval default = 3 seconds
+unsigned long laserInterval = 1000; //Interval default = 1 seconds
 unsigned long previousMillis = 0;
 boolean repeat = false; // Flag to repeat display in this loop
 
@@ -254,6 +254,25 @@ void drawPlane()
   }
 }
 
+// Draw HQ Building 
+void drawBuilding()
+{
+  int count = 180;
+  float scale = 1;
+  laser.setScale(2);
+  laser.setOffset(0,0);
+  long x = 4096;
+  long y = 4096;
+  for (int i = 0;i<count;i++) {
+    laser.setScale(scale);
+    laser.setOffset(x,y);
+    Drawing::drawObject(draw_building, sizeof(draw_building)/4);
+    x -= 20*scale;
+    y -= 20;
+    scale += 0.01;
+  }
+}
+
 // draws text as scroller from right to left
 void drawScroller(String s, float scale = 0.5, int offsetY = 2048, int speed = 100)
 {
@@ -306,7 +325,7 @@ void drawScroller(String s, float scale = 0.5, int offsetY = 2048, int speed = 1
   }
 }
 
-String animations[18] = {"OFF","LETTEREFFECT","PRESENTS","ARDUINO","LASERSHOW","PLANE","LOGO","WELOVE"
+String animations[18] = {"OFF","LETTEREFFECT","PRESENTS","ARDUINO","LASERSHOW","PLANE","BUILDING","WELOVE"
                         ,"ARDUINO2DROTATE","WHATABOUT3D","ROTATECUBE","BIKE"
                         ,"GLOBE","ARDUINO3D","OBJECTS","JUMPINGTEXT","COUNTDOWN","CIRCLEINSQUARE"};
                               
@@ -392,7 +411,7 @@ void serialEvent() {
    laserInterval : Repeat interval mSecs
 
 
-String animations[18] = {"OFF","LETTEREFFECT","PRESENTS","ARDUINO","LASERSHOW","PLANE","LOGO","WELOVE"
+String animations[18] = {"OFF","LETTEREFFECT","PRESENTS","ARDUINO","LASERSHOW","PLANE","BUILDING","WELOVE"
                         ,"ARDUINO2DROTATE","WHATABOUT3D","ROTATECUBE","BIKE"
                         ,"GLOBE","ARDUINO3D","OBJECTS","JUMPINGTEXT","COUNTDOWN","CIRCLEINSQUARE"};
 */
@@ -413,6 +432,8 @@ void acceptCommands() {
         laserAnimStr = inputString.substring(3);
         if ( laserAnimStr == "PLANE") {
           laserAnim = 5;
+        } else if ( laserAnimStr == "BUILDING" ) {
+          laserAnim = 6;
         } else if ( laserAnimStr == "BIKE" ) {
           laserAnim = 11;
         } else if ( laserAnimStr == "LASERSHOW" ) {
@@ -440,7 +461,7 @@ void acceptCommands() {
         // Only change the message if a new one is present
         if ( inputString.substring(3).length() > 1 )
         {
-          laserMsg = inputString.substring(3);
+          laserMsg = inputString.substring(3) + '\0';
           laserAnim = 0;
         }
         break;
@@ -556,6 +577,7 @@ void loop() {
           drawPlane();           // index 5 type Animation name PLANE
           break;
         case 6:
+          drawBuilding();        // Draw HQ Building
           break;
         case 7:
       

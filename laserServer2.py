@@ -27,13 +27,13 @@ except Exception as error:
   Configure GPIO in BCM mode and BCM6 as an output
   (This is connected to the Green LED in the power button)
 """
-#GPIO.setmode(GPIO.BCM)
-#GPIO.setwarnings(False)
-#GPIO.setup(6, GPIO.OUT)
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(6, GPIO.OUT)
 """
   Turn the Green LED on - Indicates Web server is ready
 """
-#GPIO.output(6, GPIO.LOW)
+GPIO.output(6, GPIO.LOW)
 
 laserText=""
 laserMode="S"
@@ -41,8 +41,11 @@ laserSize="25"
 laserCmd=""
 laserScript=""
 laserRepeat=False
-laserInterval="3000"
+laserInterval="1000"
 laserResponse="xXx laserResponse xXx"
+formatResponse=""
+sendResponse=""
+stringSent=""
 laserServices = list_available_scripts()
 
 def read_laser_function():
@@ -81,8 +84,13 @@ scheduler.add_job(
 @atexit.register
 def goodbye():
     scheduler.shutdown()
-#    GPIO.output(6, GPIO.HIGH)
-#    GPIO.cleanup()
+    print "Switch Laser Off"
+    res = lc.format_command('X','25','OFF')
+    print "Format response : " + res
+    res = lc.send_command()
+    print "Send response : " + res
+    GPIO.output(6, GPIO.HIGH)
+    GPIO.cleanup()
 
 """
   To run this 
@@ -107,6 +115,21 @@ def lastResponse():
     global laserResponse
     return laserResponse
 
+@app.route('/formatResponse', methods=['GET']) 
+def fmtResponse():
+    global formatResponse
+    return formatResponse
+
+@app.route('/sendResponse', methods=['GET']) 
+def sndResponse():
+    global sendResponse
+    return sendResponse
+
+@app.route('/stringSent', methods=['GET']) 
+def strResponse():
+    global stringSent
+    return stringSent
+
 @app.route('/clock', methods=['GET']) 
 def clock():
     response = time.strftime("%A, %d. %B %Y %I:%M:%S %p")
@@ -114,7 +137,7 @@ def clock():
 
 @app.route('/sendToLaser', methods=['GET', 'POST'])
 def sendToLaser():
-    global laserInterval,laserRepeat,laserScript,laserMode,laserSize,laserCmd
+    global laserInterval,laserRepeat,laserScript,laserMode,laserSize,laserCmd,formatResponse,sendResponse,stringSent
     laserText = request.form['msg']
     laserMode = request.form['mode'] 
     laserSize = request.form['size']
@@ -130,9 +153,13 @@ def sendToLaser():
         laserRepeat=False
 
     laserCmd = laserMode + laserSize + laserText
+    laserCmd = str(len(laserCmd)) + ":" + laserCmd
 
-    lc.format_command(laserMode,laserSize,laserText)
-    lc.send_command()
+    res = lc.format_command(laserMode,laserSize,laserText)
+    formatResponse = res
+    res = lc.send_command()
+    sendResponse = res
+    stringSent = lc.get_command()
     return render_template(request.form['responseTemplate'], laserInterval=laserInterval, lastCommand=laserCmd, laserPort=laserPort, laserText=laserText, laserMode=laserMode, laserSize=laserSize, laserServices=laserServices)
 
 if __name__ == "__main__":
