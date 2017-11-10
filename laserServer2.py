@@ -15,21 +15,25 @@ app = Flask(__name__)
 try:
   laserPort = '/dev/ttyACM0'
   lc = LaserDisplayController(laserPort, 9600)
-except :
-  laserPort = '/dev/ttyACM1'
-  lc = LaserDisplayController(laserPort, 9600)
+except Exception as error:
+  print "Failed to connect to /dev/ttyACM0 : " + str(error)
+  try:
+    laserPort = '/dev/ttyACM1'
+    lc = LaserDisplayController(laserPort, 9600)
+  except Exception as error:
+    print "Failed to connect to /dev/ttyACM1 : " + str(error)  
 
 """
   Configure GPIO in BCM mode and BCM6 as an output
   (This is connected to the Green LED in the power button)
 """
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-GPIO.setup(6, GPIO.OUT)
+#GPIO.setmode(GPIO.BCM)
+#GPIO.setwarnings(False)
+#GPIO.setup(6, GPIO.OUT)
 """
   Turn the Green LED on - Indicates Web server is ready
 """
-GPIO.output(6, GPIO.LOW)
+#GPIO.output(6, GPIO.LOW)
 
 laserText=""
 laserMode="S"
@@ -77,8 +81,8 @@ scheduler.add_job(
 @atexit.register
 def goodbye():
     scheduler.shutdown()
-    GPIO.output(6, GPIO.HIGH)
-    GPIO.cleanup()
+#    GPIO.output(6, GPIO.HIGH)
+#    GPIO.cleanup()
 
 """
   To run this 
