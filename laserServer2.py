@@ -30,13 +30,13 @@ def connectToLaser():
   Configure GPIO in BCM mode and BCM6 as an output
   (This is connected to the Green LED in the power button)
 """
-#GPIO.setmode(GPIO.BCM)
-#GPIO.setwarnings(False)
-#GPIO.setup(6, GPIO.OUT)
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(6, GPIO.OUT)
 """
   Turn the Green LED on - Indicates Web server is ready
 """
-#GPIO.output(6, GPIO.LOW)
+GPIO.output(6, GPIO.LOW)
 
 laserText=""
 laserMode="S"
@@ -81,8 +81,8 @@ def goodbye():
     print "Format response : " + res
     res = lc.send_command()
     print "Send response : " + res
-#    GPIO.output(6, GPIO.HIGH)
-#    GPIO.cleanup()
+    GPIO.output(6, GPIO.HIGH)
+    GPIO.cleanup()
 
 """
   To run this 
