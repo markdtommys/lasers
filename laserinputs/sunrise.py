@@ -15,7 +15,7 @@ def performactions():
     sunrise = jsontext['results']['sunrise']
     sunset = jsontext['results']['sunset']
     daylength = jsontext['results']['day_length']
-    returnstring = 'day length {} sunrise {} sunset {}'.format(daylength, sunrise, sunset).replace(':', '.')
+    returnstring = 'day length {} sunrise {} sunset {}'.format(daylength, sunrise, sunset)
     return returnstring
 
 

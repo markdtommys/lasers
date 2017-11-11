@@ -12,28 +12,31 @@ app = Flask(__name__)
   try ttyACM0 and ttyACM1 as Arduino seems to be arbitrarily on
   one of these but not always the same one
 """
-try:
-  laserPort = '/dev/ttyACM0'
-  lc = LaserDisplayController(laserPort, 9600)
-except Exception as error:
-  print "Failed to connect to /dev/ttyACM0 : " + str(error)
+
+def connectToLaser():
+  global laserPort,lc
   try:
-    laserPort = '/dev/ttyACM1'
-    lc = LaserDisplayController(laserPort, 9600)
+    laserPort = '/dev/ttyACM0'
+    lc = LaserDisplayController(laserPort, 115200)
   except Exception as error:
-    print "Failed to connect to /dev/ttyACM1 : " + str(error)  
+    print "Failed to connect to /dev/ttyACM0 : " + str(error)
+    try:
+      laserPort = '/dev/ttyACM1'
+      lc = LaserDisplayController(laserPort, 115200)
+    except Exception as error:
+      print "Failed to connect to /dev/ttyACM1 : " + str(error)  
 
 """
   Configure GPIO in BCM mode and BCM6 as an output
   (This is connected to the Green LED in the power button)
 """
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-GPIO.setup(6, GPIO.OUT)
+#GPIO.setmode(GPIO.BCM)
+#GPIO.setwarnings(False)
+#GPIO.setup(6, GPIO.OUT)
 """
   Turn the Green LED on - Indicates Web server is ready
 """
-GPIO.output(6, GPIO.LOW)
+#GPIO.output(6, GPIO.LOW)
 
 laserText=""
 laserMode="S"
@@ -46,40 +49,29 @@ laserResponse="xXx laserResponse xXx"
 formatResponse=""
 sendResponse=""
 stringSent=""
-laserServices = list_available_scripts()
+cntLaserResponse=0
 
 def read_laser_function():
-    global laserResponse   
+    global laserResponse,cntLaserResponse  
     response = lc.read_response()
     if len(response) > 0:
-        print "DEBUG read_laser_function : " + response
-        laserResponse = response
+        cntLaserResponse += 1
+        print str(time.clock()) + ":DEBUG read_laser_function " + str(cntLaserResponse) + " : " + response
+        if not response.startswith('INP'):
+            laserResponse = str(cntLaserResponse) + ":" + response
+    else:
+        print str(time.clock()) + ":DEBUG NO_DATA read_laser_function " + str(cntLaserResponse)
+        
 
 def repeat_service_call():
-    global laserMode,laserSize,laserCmd
+    global laserMode,laserSize,laserCmd,laserText,formatResponse,sendResponse,stringSent
     if ( laserRepeat ):
         laserText = run_custom_display_script(laserScript)
         laserCmd = laserMode + laserSize + laserText
-        res = lc.format_command(laserMode,laserSize,laserText)
-        print "DEBUG repeat_service_call.format : " + res
-        res = lc.send_command()
-        print "DEBUG repeat_service_call.send : " + res
+        formatResponse = lc.format_command(laserMode,laserSize,laserText)
+        sendResponse = lc.send_command()
+        stringSent = lc.get_command()
         
-scheduler = BackgroundScheduler()
-scheduler.start()
-scheduler.add_job(
-    func=read_laser_function,
-    trigger=IntervalTrigger(seconds=3),
-    id='read_laser_job',
-    name='Read laser every three seconds',
-    replace_existing=True)
-scheduler.add_job(
-    func=repeat_service_call,
-    trigger=IntervalTrigger(seconds=30),
-    id='repeat_service_call_job',
-    name='Repeat last service cript every thirty seconds',
-    replace_existing=True)
-
 # Shut down the scheduler when exiting the app
 @atexit.register
 def goodbye():
@@ -89,8 +81,8 @@ def goodbye():
     print "Format response : " + res
     res = lc.send_command()
     print "Send response : " + res
-    GPIO.output(6, GPIO.HIGH)
-    GPIO.cleanup()
+#    GPIO.output(6, GPIO.HIGH)
+#    GPIO.cleanup()
 
 """
   To run this 
@@ -130,6 +122,11 @@ def strResponse():
     global stringSent
     return stringSent
 
+@app.route('/laserCmd', methods=['GET']) 
+def lsrCmd():
+    global laserCmd
+    return laserCmd
+
 @app.route('/clock', methods=['GET']) 
 def clock():
     response = time.strftime("%A, %d. %B %Y %I:%M:%S %p")
@@ -144,15 +141,17 @@ def sendToLaser():
 
     if ( laserMode == 'I' ):
         laserInterval = laserText 
+        laserCmd = laserMode + laserText
     elif ( laserMode == 'R'):
         laserRepeat=True
         laserMode=request.form['smode']
         laserScript = laserText
         laserText = run_custom_display_script(laserScript)
+        laserCmd = laserMode + laserSize + laserText
     else:
         laserRepeat=False
+        laserCmd = laserMode + laserSize + laserText
 
-    laserCmd = laserMode + laserSize + laserText
     laserCmd = str(len(laserCmd)) + ":" + laserCmd
 
     res = lc.format_command(laserMode,laserSize,laserText)
@@ -163,4 +162,21 @@ def sendToLaser():
     return render_template(request.form['responseTemplate'], laserInterval=laserInterval, lastCommand=laserCmd, laserPort=laserPort, laserText=laserText, laserMode=laserMode, laserSize=laserSize, laserServices=laserServices)
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0',port=5000,debug=True)
+    connectToLaser()
+    laserServices = list_available_scripts()
+    scheduler = BackgroundScheduler()
+    scheduler.start()
+    scheduler.add_job(
+        func=read_laser_function,
+        trigger=IntervalTrigger(seconds=1),
+        id='read_laser_job',
+        name='Read laser every three seconds',
+        replace_existing=True)
+    scheduler.add_job(
+        func=repeat_service_call,
+        trigger=IntervalTrigger(seconds=30),
+        id='repeat_service_call_job',
+        name='Repeat last service script every thirty seconds',
+        replace_existing=True)
+
+    app.run(host='0.0.0.0',port=5000)

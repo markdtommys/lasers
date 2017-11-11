@@ -115,7 +115,7 @@ def main():
     """
     parser = argparse.ArgumentParser(description='command line app to send commands to the laser projector')
     group = parser.add_mutually_exclusive_group()
-    parser.add_argument('-b', dest='baudrate', help='set baudrate, if not specified default is 9600 baud', type=int, default=9600)
+    parser.add_argument('-b', dest='baudrate', help='set baudrate, if not specified default is 9600 baud', type=int, default=115200)
     parser.add_argument('-d', dest='serialdevice', help='specify serial device, default is auto', default='auto')
     parser.add_argument('-s', dest='displaysize', help='size of the display', default='25')
     parser.add_argument('-m', dest='mode', help='mode to select', default='M')

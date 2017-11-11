@@ -32,7 +32,6 @@
     <script type="text/javascript">
       function getLaserResponse(){
         $.ajax({url:"/laserResponse", success:function(result){
-          console.log(result);
           $("#laserResponse").val(result);
           }
         });
@@ -40,7 +39,6 @@
 
       function getFormatResponse(){
         $.ajax({url:"/formatResponse", success:function(result){
-          console.log(result);
           $("#formatResponse").val(result);
           }
         });
@@ -48,7 +46,6 @@
 
       function getSendResponse(){
         $.ajax({url:"/sendResponse", success:function(result){
-          console.log(result);
           $("#sendResponse").val(result);
           }
         });
@@ -56,26 +53,25 @@
 
       function getStringSent(){
         $.ajax({url:"/stringSent", success:function(result){
-          console.log(result);
           $("#stringSent").val(result);
           }
         });
       }
 
-      function getClock(){
-        $.ajax({url:"/clock", success:function(result){
-          console.log(result);
-          $("#clock").val(result);
+      function getLaserCmd(){
+        $.ajax({url:"/laserCmd", success:function(result){
+          $("#laserCommand").val(result);
           }
         });
       }
+
       $(document).ready(function(){
         getResponsiveBreakpoint();
         setInterval(getLaserResponse, 1000);
         setInterval(getFormatResponse, 3000);
         setInterval(getSendResponse, 3000);
         setInterval(getStringSent, 3000);
-        setInterval(getClock, 30000);
+        setInterval(getLaserCmd, 3000);
       });
     </script>
     <script>/*
@@ -251,7 +247,7 @@
                   <label class="control-label col-sm-2" for="msg">Interval(mSecs):</label>
                     <label class="radio"><input type="number" min="0" max="10000" name="msg" value="{{laserInterval}}" required> {{laserInterval}}</label>
                   <input type="hidden" class="form-control" id="mode" name="mode" value="I">
-                  <input type="hidden" class="form-control" id="size" name="size" value="">
+                  <input type="hidden" class="form-control" id="size" name="size" value="25">
                 </div>
                 <input type="hidden" name="responseTemplate" value="lasers.html">           
                 <button type="submit" class="btn btn-default btn-primary">Configure Laser</button>
@@ -304,7 +300,7 @@
             <div class="col-lg-2"><Label>Send</Label><input type="text" readonly class="form-control" name="sendResponse" id="sendResponse" value=""></div>
           </div>  
           <div class="row">
-            <div class="col-lg-6"><Label>Last Command</Label><input type="text" readonly class="form-control" name="lastCommand" value="{{lastCommand}}"></div>
+            <div class="col-lg-6"><Label>Last Command</Label><input type="text" readonly class="form-control" name="laserCommand" id="laserCommand"></div>
             <div class="col-lg-6"><Label>Sent Command</Label><input type="text" readonly class="form-control" name="stringSent" id="stringSent"></div>
           </div>
           <div class="row">

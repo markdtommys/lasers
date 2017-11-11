@@ -20,9 +20,9 @@
 #include "Cube.h"
 #include "Objects.h"
 #include "Logo.h"
-String myteststring = "CHELTENHAM - 17C - WINDY";
 int inputactive = 0;
-String inputString = "";         // a String to hold incoming data
+String inputString = "";
+int inpos = 0;
 boolean stringComplete = false;  // whether the string is complete
 int cnt = 0;
 int laserMode = 0;
@@ -42,12 +42,10 @@ void setup()
   laser.init();
   
   // initialize serial:
-  Serial.begin(9600);
-  // reserve 256 bytes for the inputString:
-  inputString.reserve(256);
+  Serial.begin(115200);
+  // reserve 100 bytes for the inputString:
+  inputString.reserve(100);
 }
-
-
 
 // Start with one string and mutate to final string
 void letterEffect(String s)
@@ -91,6 +89,29 @@ void presents(String s) {
     Drawing::drawString(str,-w/2, 0);
   }
 }
+
+extern unsigned int __bss_end;
+extern unsigned int __heap_start;
+extern void *__brkval;
+
+//int freeRam () {
+//  return 100;
+//}
+uint16_t freeRam() {
+  uint8_t newVariable;
+  // heap is empty, use bss as start memory address
+  if ((uint16_t)__brkval == 0)
+    return (((uint16_t)&newVariable) - ((uint16_t)&__bss_end));
+// use heap end as the start of the memory address
+  else
+    return (((uint16_t)&newVariable) - ((uint16_t)__brkval));
+};
+// Calculate free RAM
+//int freeRam () {
+//  extern int __heap_start, *__brkval; 
+//  int v; 
+//  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+//}
 
 // Rotate Horizontal
 void horizSpin(String s)
@@ -142,7 +163,7 @@ void static2Line(String s1, String s2)
   int w2 = Drawing::stringAdvance(s2);
   laser.setScale(laserSize/100.0);
 
-  for (int i = 0;i<99;i++) {
+  for (int i = 0;i<10;i++) {
     laser.setOffset(2048,2048 + 600);
     Drawing::drawString(s1,-w1/2,-500);
     laser.setOffset(2048,2048);
@@ -156,7 +177,7 @@ void staticText(String s1)
   int w1 = Drawing::stringAdvance(s1);
   laser.setScale(laserSize/100.0);
 
-  for (int i = 0;i<99;i++) {
+  for (int i = 0;i<10;i++) {
     laser.setOffset(2048,2048);
     Drawing::drawString(s1,-w1/2,-500);
   }
@@ -279,7 +300,7 @@ void drawScroller(String s, float scale = 0.5, int offsetY = 2048, int speed = 1
   int charW = Drawing::advance('I'); // worst case: smallest char
   int maxChar = (4096. / (charW * scale) );
   if ( maxChar > 99 ) {
-    Serial.println("DEBUG in drawScroller - maxChar limited to 99 was " + String(maxChar));
+    //Serial.println("DEBUG in drawScroller - maxChar limited to 99 was " + String(maxChar));
     maxChar=99;
   }
     
@@ -376,10 +397,27 @@ String getLaserMode() {
   return res;
 }
 
+// Check a valid laserSize has been specified
+boolean checkLaserSize() {
+    char sz[3] = "";
+    sz[0] = inputString[1];
+    sz[1] = inputString[2];
+    int checkSize = atoi(sz);
+    if ( checkSize < 25 || checkSize > 99) {
+      Serial.println("ERROR Range 25-99 received laserSize = " + (String)checkSize);
+      return false;
+    } else {
+      //Serial.println("DEBUG Range 25-99 received laserSize = " + (String)checkSize);
+      return true;
+    }
+}
+
 void setLaserSize() {
       // Set size based on 2nd and 3rd characters
-    laserSize = inputString.substring(1,3).toInt();
-    Serial.println("DEBUG laserSize = " + (String)laserSize);
+    char sz[3] = "";
+    sz[0] = inputString[1];
+    sz[1] = inputString[2];
+    laserSize = atoi(sz);
 }
 
 /*
@@ -396,8 +434,10 @@ void serialEvent() {
     if (inChar == '\n') {
       stringComplete = true;
     } else {
-      // add it to the inputString:
-      inputString += inChar;
+      // add it to the inputString - if there is room
+      if ( inputString.length() < 40 ) {
+        inputString += inChar;
+      }
     }
   }
 }
@@ -418,67 +458,76 @@ String animations[18] = {"OFF","LETTEREFFECT","PRESENTS","ARDUINO","LASERSHOW","
 void acceptCommands() {
     // print the string when a newline arrives:
   if (stringComplete) {
-    cnt += 1;
-    Serial.println("DEBUG You sent : " + inputString);
+    boolean sizeIsValid = true;
     
-    // Get command based on first character
-    laserCommand = inputString.charAt(0);
-    Serial.println("DEBUG laserCommand = " + (String)laserCommand);
+    // Check we have a valid laserSize
+    // (Except for I command which has no size)
+    if ( inputString[0] != 'I' ){
+      sizeIsValid = checkLaserSize();
+    };
     
-    String laserAnimStr = "";   
-    switch(laserCommand) {
-      case 'A':
-        setLaserSize();
-        laserAnimStr = inputString.substring(3);
-        if ( laserAnimStr == "PLANE") {
-          laserAnim = 5;
-        } else if ( laserAnimStr == "BUILDING" ) {
-          laserAnim = 6;
-        } else if ( laserAnimStr == "BIKE" ) {
-          laserAnim = 11;
-        } else if ( laserAnimStr == "LASERSHOW" ) {
-          laserAnim = 4;
-        } else if ( laserAnimStr == "COUNTDOWN" ) {
-          laserAnim = 16;
-        } else if ( laserAnimStr == "CIRCLEINSQUARE" ) {
-          laserAnim = 17;
-        } // Unknown animations leave the animation selected unchanged
-
-        laserMode = laserCommand;
-        Serial.println("DEBUG Laser mode set to " + getLaserMode() + " " + getLaserAnimation() + " selected");
-        laserMsg="";
-        break;
-      case 'F': // Flashing
-      case 'H': // Horizontal spin
-      case 'M': // Marquee
-      case 'P': // Presents
-      case 'S': // Static
-      case '2': // 2 Line
-      case 'V': // Vertical spin
-        setLaserSize();
-        laserMode = laserCommand;
-        Serial.println("DEBUG Laser mode set to " + getLaserMode());
-        // Only change the message if a new one is present
-        if ( inputString.substring(3).length() > 1 )
-        {
-          laserMsg = inputString.substring(3) + '\0';
+    if ( sizeIsValid ) {
+      //Serial.println("DEBUG You sent : " + inputString);
+      
+      // Get command based on first character
+      laserCommand = inputString[0];
+      //Serial.println("DEBUG laserCommand = " + (String)laserCommand);
+      
+      String laserAnimStr = "";   
+      switch(laserCommand) {
+        case 'A':
+          setLaserSize();
+          laserAnimStr = inputString.substring(3);
+          if ( laserAnimStr == "PLANE") {
+            laserAnim = 5;
+          } else if ( laserAnimStr == "BUILDING" ) {
+            laserAnim = 6;
+          } else if ( laserAnimStr == "BIKE" ) {
+            laserAnim = 11;
+          } else if ( laserAnimStr == "LASERSHOW" ) {
+            laserAnim = 4;
+          } else if ( laserAnimStr == "COUNTDOWN" ) {
+            laserAnim = 16;
+          } else if ( laserAnimStr == "CIRCLEINSQUARE" ) {
+            laserAnim = 17;
+          } // Unknown animations leave the animation selected unchanged
+  
+          laserMode = laserCommand;
+          //Serial.println("DEBUG Laser mode set to " + getLaserMode() + " " + getLaserAnimation() + " selected");
+          laserMsg="";
+          break;
+        case 'F': // Flashing
+        case 'H': // Horizontal spin
+        case 'M': // Marquee
+        case 'P': // Presents
+        case 'S': // Static
+        case '2': // 2 Line
+        case 'V': // Vertical spin
+          setLaserSize();
+          laserMode = laserCommand;
+          //Serial.println("DEBUG Laser mode set to " + getLaserMode());
+          // Only change the message if a new one is present
+          if ( inputString.substring(3).length() > 1 )
+          {
+            laserMsg = inputString.substring(3) + '\0';
+            laserAnim = 0;
+          }
+          break;
+        case 'X':
+          laserMode = laserCommand;
+          //Serial.println("DEBUG Laser " + getLaserMode());
+          laserMsg = "";
           laserAnim = 0;
-        }
-        break;
-      case 'X':
-        laserMode = laserCommand;
-        Serial.println("DEBUG Laser " + getLaserMode());
-        laserMsg = "";
-        laserAnim = 0;
-        break;
-      case 'I':
-        laserInterval = inputString.substring(1).toInt();
-        Serial.println("DEBUG Laser interval set to " + (String)laserInterval);
-        break;
-      default:
-        Serial.println("DEBUG Laser Mode " + getLaserMode());
+          break;
+        case 'I':
+          laserInterval = inputString.substring(1).toInt();
+          //Serial.println("DEBUG Laser interval set to " + (String)laserInterval);
+          break;
+        default:
+          //Serial.println("DEBUG Laser Mode " + getLaserMode());
+          break;
+      }
     }
-
     // clear the string:
     inputString = "";
     stringComplete = false;
@@ -490,20 +539,23 @@ void outputStatus() {
 
   if ( laserInterval != 0 )
   {
-    if (currentMillis - previousMillis >= laserInterval) {
+    int duration = currentMillis - previousMillis;
+    if (duration >= laserInterval) {
       repeat = true;
       // output the message at each laserInterval 
       previousMillis = currentMillis;
+  
       if ( laserMsg.length() > 0 ) 
       {
         // Output Laser message
-        Serial.println( (String)currentMillis + " Mode " + getLaserMode() + " Size " + (String)laserSize + " Length " + (String)laserMsg.length() + " Msg " + laserMsg);
+        Serial.println( (String)cnt + ":" + (String)freeRam() + ":" + (String)duration + ":" + getLaserMode() + ":" + (String)laserSize + ":" + (String)laserMsg.length() + ":" + laserMsg );
+        //Serial.println( "INP:"+inputString );
       }
       
       if ( laserAnim != 0 )
       {
         // Output laserAnimation
-        Serial.println( (String)currentMillis + " Mode " + getLaserMode() + " Size " + (String)laserSize + " Animation " + getLaserAnimation());
+        Serial.println( (String)cnt + ":" + (String)freeRam() + ":" + (String)duration + ":" + getLaserMode() + ":" + (String)laserSize + ":" + getLaserAnimation());
       }
     }
   }  
@@ -522,6 +574,10 @@ void loop() {
   // If laserMsg is set we should display a message ...
   if ( repeat )
   {
+    if ( cnt > 999 ) {
+      cnt = 0;
+    }
+    cnt++;
     if ( laserMsg.length() > 0 ) {
       int commaAt = laserMsg.indexOf(',');
       switch( laserMode )
