@@ -27,16 +27,22 @@ def connectToLaser():
       print "Failed to connect to /dev/ttyACM1 : " + str(error)  
 
 """
-  Configure GPIO in BCM mode and BCM6 as an output
+  Configure GPIO in BCM mode and BCM6 (PiZero) BCM17 (Pi1b) as an output
   (This is connected to the Green LED in the power button)
 """
+rpi=GPIO.RPI_INFO
+if rpi['TYPE'] == 'Model B':
+    greenLED = 17
+else:
+    greenLED = 6
+print "INFO : Green LED on pin " + str(greenLED)
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
-GPIO.setup(6, GPIO.OUT)
+GPIO.setup(greenLED, GPIO.OUT)
 """
   Turn the Green LED on - Indicates Web server is ready
 """
-GPIO.output(6, GPIO.LOW)
+GPIO.output(greenLED, GPIO.LOW)
 
 laserText=""
 laserMode="S"
@@ -81,7 +87,7 @@ def goodbye():
     print "Format response : " + res
     res = lc.send_command()
     print "Send response : " + res
-    GPIO.output(6, GPIO.HIGH)
+    GPIO.output(greenLED, GPIO.HIGH)
     GPIO.cleanup()
 
 """
