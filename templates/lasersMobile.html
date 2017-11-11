@@ -8,7 +8,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Mobile Laser UI</title>
+    <title>Laser UI</title>
 
     <!-- Bootstrap core CSS -->
     <link href="static/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -30,25 +30,23 @@
     </style>
     <!-- Repeatedly check for laser Responses -->
     <script type="text/javascript">
-      function getLaserResponse(){
-        $.ajax({url:"/laserResponse", success:function(result){
-          console.log(result);
-          $("#laserResponse").val(result);
+      function getData(){
+        $.ajax({url:"/getData", success:function(result){
+          // All data returned from serverside
+          $("#clock").val(result['clock']);
+          $("#laserResponse").val(result['laserResponse']);
+          $("#formatResponse").val(result['formatResponse']);
+          $("#sendResponse").val(result['sendResponse']);
+          $("#stringSent").val(result['stringSent']);
+          $("#laserCommand").val(result['laserCommand']);
+          $("#laserRepeat").val(result['laserRepeat']);
           }
         });
       }
 
-      function getClock(){
-        $.ajax({url:"/clock", success:function(result){
-          console.log(result);
-          $("#clock").val(result);
-          }
-        });
-      }
       $(document).ready(function(){
         getResponsiveBreakpoint();
-        setInterval(getLaserResponse, 1000);
-        setInterval(getClock, 30000);
+        setInterval(getData, 1000);
       });
     </script>
     <script>/*
@@ -90,7 +88,8 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
       <div class="container">
-        <a class="navbar-brand" href="#">Laser Projector Configurator</a><span class="badge" style="background-color: #e3f2fd;" id="screenSize"></span>
+        <a class="navbar-brand" href="#">Laser Projector Configurator </a>
+        <span class="badge" style="background-color: #e3f2fd;" id="screenSize"></span>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -108,7 +107,10 @@
               <a class="nav-link" data-toggle="tab" href="#animations" role="tab">Animations</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/mobile" role="tab">Mobile</a>
+              <a class="nav-link" data-toggle="tab" href="#configure" role="tab">Configuration</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/" role="tab">Full</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" data-toggle="tab" href="#contacts" role="tab">Contact</a>
@@ -132,11 +134,11 @@
                 <p class="lead">Enter the text, select the size and click - Send To Laser</p>
                 <div class="form-group">
                   <label class="control-label col-sm-2" for="msg">Message:</label>
-                  <input type="text" class="form-control" id="msg" minlength="1" maxlength="100" placeholder="Enter message" name="msg" value="{{laserText}}">
+                  <input type="text" class="form-control" id="msg" minlength="1" maxlength="100" placeholder="Enter message" name="msg" value="{{laserText}}" required>
                 </div>
                 <div class="form-group">
                   <label class="control-label col-sm-2" for="size">Size:</label>
-                  <input type="number" class="form-control" id="size" min="25" max="99" placeholder="Enter 25 ... 99" name="size" value="{{laserSize}}">
+                  <input type="number" class="form-control" id="size" min="25" max="99" placeholder="Enter 25 ... 99" name="size" value="{{laserSize}}" required>
                 </div>
                 <div class="form-group">
                   <label class="radio-inline active"><input type="radio" name="mode" value="M" checked=""> Marquee</label>
@@ -167,7 +169,17 @@
                     <label class="radio"><input type="radio" name="msg" value="{{svc}}" checked=""> {{svc}}</label>
                     {% endfor %}
                   <input type="hidden" class="form-control" id="mode" name="mode" value="R">
-                  <input type="hidden" class="form-control" id="size" name="size" value="25">
+                  <input type="hidden" class="form-control" id="size" name="size" value="{{laserSize}}">
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="smode">Mode:</label>
+                    <label class="radio-inline active"><input type="radio" name="smode" value="M" checked=""> Marquee</label>
+                    <label class="radio-inline"><input type="radio" name="smode" value="S"> Static</label>
+                    <label class="radio-inline"><input type="radio" name="smode" value="2"> 2 Lines (comma seperate text)</label>
+                    <label class="radio-inline"><input type="radio" name="smode" value="F"> Merge</label>
+                    <label class="radio-inline"><input type="radio" name="smode" value="P"> Presents</label>
+                    <label class="radio-inline"><input type="radio" name="smode" value="H"> Horizontal Spin</label>
+                    <label class="radio-inline"><input type="radio" name="smode" value="V"> Vertical Spin</label>
                 </div>
                 <input type="hidden" name="responseTemplate" value="lasers.html">           
                 <button type="submit" class="btn btn-default btn-primary">Send To Laser</button>
@@ -185,10 +197,10 @@
                 <p class="lead">Select the Animation and click - Send To Laser</p>
                 <div class="form-group">
                   <label class="control-label col-sm-2" for="msg">Animation:</label>
-                  <label class="radio active"><input type="radio" name="msg" value="BIKE" checked=""> Bike</label>
+                  <label class="radio active"><input type="radio" name="msg" value="BUILDING" checked=""> Building</label>
                   <label class="radio"><input type="radio" name="msg" value="PLANE"> Plane</label>
-                  <label class="radio"><input type="radio" name="msg" value="ARDUINO"> Arduino</label>
                   <label class="radio"><input type="radio" name="msg" value="LASERSHOW"> Laser Show</label>
+                  <label class="radio"><input type="radio" name="msg" value="CIRCLEINSQUARE"> Circle in Square</label>
                   <label class="radio"><input type="radio" name="msg" value="COUNTDOWN"> Count Down</label>
                   <input type="hidden" class="form-control" id="mode" name="mode" value="A">
                   <input type="hidden" class="form-control" id="size" name="size" value="25">
@@ -196,6 +208,46 @@
                 <input type="hidden" name="responseTemplate" value="lasers.html">           
                 <button type="submit" class="btn btn-default btn-primary">Send To Laser</button>
                 </form> 
+            </div>       
+          </div>
+        </div>
+      </div>
+      <div id="configure" class="tab-pane fade" role="tabpanel">
+        <div class="container">
+          <div class="row">
+            <div class="col-lg-12 text-center">
+              <form class="form-horizontal" action="/sendToLaser" method="post">
+                <h1 class="mt-5">Laser Configure</h1>
+                <p class="lead">Adjust the config click - Send To Laser</p>
+                <div class="form-group">
+                  <label class="control-label col-sm-2" for="msg">Interval(mSecs):</label>
+                    <label class="radio"><input type="number" min="0" max="10000" name="msg" value="{{laserInterval}}" required> {{laserInterval}}</label>
+                  <input type="hidden" class="form-control" id="mode" name="mode" value="I">
+                  <input type="hidden" class="form-control" id="size" name="size" value="25">
+                </div>
+                <input type="hidden" name="responseTemplate" value="lasers.html">           
+                <button type="submit" class="btn btn-default btn-primary">Configure Laser</button>
+              </form>        
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="contacts" class="tab-pane fade" role="tabpanel">
+        <div class="container">
+          <div class="row">
+            <div class="col-lg-12 text-center">
+              <form class="form-horizontal" action="/sendToLaser" method="post">
+                <h1 class="mt-5">Contacts</h1>
+                <p class="lead">The Laser Project has been brought to you by Team Generally Confused Headleaa Quoram</p>
+                <div class="form-group">
+                  <label class="control-label col-sm-2" for="hw">Hardware Guru</label>
+                  <input type="email" class="form-control" id="hw" name="hw" value="neilc@tommys.tech">
+                  <label class="control-label col-sm-2" for="py">Python Guru</label>
+                  <input type="email" class="form-control" id="py" name="py" value="tomw@tommys.tech">
+                  <label class="control-label col-sm-2" for="ui">UI Guru</label>
+                  <input type="email" class="form-control" id="ui" name="ui" value="markd@tommys.tech">
+                </div>
+              </form> 
             </div>       
           </div>
         </div>
@@ -212,6 +264,7 @@
           <input type="hidden" id="mode" name="mode" value="X">
           <input type="hidden" name="responseTemplate" value="lasers.html">           
           <button type="submit" class="btn btn-default btn-warning">Laser Off</button>
+        </div>
       </form>        
     </div>
 

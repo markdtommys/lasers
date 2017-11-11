@@ -30,48 +30,23 @@
     </style>
     <!-- Repeatedly check for laser Responses -->
     <script type="text/javascript">
-      function getLaserResponse(){
-        $.ajax({url:"/laserResponse", success:function(result){
-          $("#laserResponse").val(result);
-          }
-        });
-      }
-
-      function getFormatResponse(){
-        $.ajax({url:"/formatResponse", success:function(result){
-          $("#formatResponse").val(result);
-          }
-        });
-      }
-
-      function getSendResponse(){
-        $.ajax({url:"/sendResponse", success:function(result){
-          $("#sendResponse").val(result);
-          }
-        });
-      }
-
-      function getStringSent(){
-        $.ajax({url:"/stringSent", success:function(result){
-          $("#stringSent").val(result);
-          }
-        });
-      }
-
-      function getLaserCmd(){
-        $.ajax({url:"/laserCmd", success:function(result){
-          $("#laserCommand").val(result);
+      function getData(){
+        $.ajax({url:"/getData", success:function(result){
+          // All data returned from serverside
+          $("#clock").val(result['clock']);
+          $("#laserResponse").val(result['laserResponse']);
+          $("#formatResponse").val(result['formatResponse']);
+          $("#sendResponse").val(result['sendResponse']);
+          $("#stringSent").val(result['stringSent']);
+          $("#laserCommand").val(result['laserCommand']);
+          $("#laserRepeat").val(result['laserRepeat']);
           }
         });
       }
 
       $(document).ready(function(){
         getResponsiveBreakpoint();
-        setInterval(getLaserResponse, 1000);
-        setInterval(getFormatResponse, 3000);
-        setInterval(getSendResponse, 3000);
-        setInterval(getStringSent, 3000);
-        setInterval(getLaserCmd, 3000);
+        setInterval(getData, 1000);
       });
     </script>
     <script>/*
@@ -113,7 +88,8 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
       <div class="container">
-        <a class="navbar-brand" href="#">Laser Projector Configurator</a><span class="badge" style="background-color: #e3f2fd;" id="screenSize"></span>
+        <a class="navbar-brand" href="#">Laser Projector Configurator </a>
+        <span class="badge" style="background-color: #e3f2fd;" id="screenSize"></span>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -134,7 +110,7 @@
               <a class="nav-link" data-toggle="tab" href="#configure" role="tab">Configuration</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/mobile" role="tab">Mobile</a>
+              <a class="nav-link" href="/mobile" role="tab">Basic</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" data-toggle="tab" href="#contacts" role="tab">Contact</a>
@@ -304,7 +280,9 @@
             <div class="col-lg-6"><Label>Sent Command</Label><input type="text" readonly class="form-control" name="stringSent" id="stringSent"></div>
           </div>
           <div class="row">
-              <Label>Laser Port</Label><input type="text" readonly class="form-control" name="laserPort" value="{{laserPort}}">
+            <div class="col-lg-2"><Label>Laser Port</Label><input type="text" readonly class="form-control" name="laserPort" value="{{laserPort}}"></div>
+            <div class="col-lg-2"><Label>Repeat</Label><input type="text" readonly class="form-control" name="laserRepeat" id="laserRepeat"></div>
+            <div class="col-lg-8"><Label>Clock</Label><input type="text" readonly class="form-control" name="clock" id="clock"></div>
           </div>
         </div>
       </div>

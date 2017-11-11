@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, render_template, request
 from laserDriver import LaserDisplayController, list_available_scripts, run_custom_display_script
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
@@ -102,41 +102,17 @@ def goodbye():
 
 @app.route('/', methods=['GET', 'POST'])
 def form():
-    return render_template('lasers.html',laserPort=laserPort,laserServices=laserServices) 
+    return render_template('lasers.html',laserSize=laserSize,laserPort=laserPort,laserServices=laserServices) 
 
 @app.route('/mobile', methods=['GET', 'POST'])
 def formMobile():
     return render_template('lasersMobile.html',laserPort=laserPort,laserServices=laserServices) 
 
-@app.route('/laserResponse', methods=['GET']) 
-def lastResponse():
-    global laserResponse
-    return laserResponse
-
-@app.route('/formatResponse', methods=['GET']) 
-def fmtResponse():
-    global formatResponse
-    return formatResponse
-
-@app.route('/sendResponse', methods=['GET']) 
-def sndResponse():
-    global sendResponse
-    return sendResponse
-
-@app.route('/stringSent', methods=['GET']) 
-def strResponse():
-    global stringSent
-    return stringSent
-
-@app.route('/laserCmd', methods=['GET']) 
-def lsrCmd():
-    global laserCmd
-    return laserCmd
-
-@app.route('/clock', methods=['GET']) 
-def clock():
-    response = time.strftime("%A, %d. %B %Y %I:%M:%S %p")
-    return response
+@app.route('/getData', methods=['GET']) 
+def gtDta():
+    global laserResponse,formatResponse,sendResponse,stringSent,laserCmd,laserRepeat
+    output = {'clock':time.strftime("%A, %d. %B %Y %I:%M:%S %p"),'laserResponse':laserResponse,'formatResponse':formatResponse,'sendResponse':sendResponse,'stringSent':stringSent,'laserCommand':laserCmd,'laserRepeat':laserRepeat}
+    return jsonify(output)
 
 @app.route('/sendToLaser', methods=['GET', 'POST'])
 def sendToLaser():
@@ -146,6 +122,7 @@ def sendToLaser():
     laserSize = request.form['size']
 
     if ( laserMode == 'I' ):
+        laserRepeat=False
         laserInterval = laserText 
         laserCmd = laserMode + laserText
     elif ( laserMode == 'R'):
