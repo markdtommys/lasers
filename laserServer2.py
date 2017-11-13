@@ -144,22 +144,23 @@ def sendToLaser():
     stringSent = lc.get_command()
     return render_template(request.form['responseTemplate'], laserInterval=laserInterval, lastCommand=laserCmd, laserPort=laserPort, laserText=laserText, laserMode=laserMode, laserSize=laserSize, laserServices=laserServices)
 
-if __name__ == "__main__":
-    connectToLaser()
-    laserServices = list_available_scripts()
-    scheduler = BackgroundScheduler()
-    scheduler.start()
-    scheduler.add_job(
-        func=read_laser_function,
-        trigger=IntervalTrigger(seconds=1),
-        id='read_laser_job',
-        name='Read laser every three seconds',
-        replace_existing=True)
-    scheduler.add_job(
-        func=repeat_service_call,
-        trigger=IntervalTrigger(seconds=30),
-        id='repeat_service_call_job',
-        name='Repeat last service script every thirty seconds',
-        replace_existing=True)
+# Startup code goes here
+connectToLaser()
+laserServices = list_available_scripts()
+scheduler = BackgroundScheduler()
+scheduler.start()
+scheduler.add_job(
+    func=read_laser_function,
+    trigger=IntervalTrigger(seconds=1),
+    id='read_laser_job',
+    name='Read laser every three seconds',
+    replace_existing=True)
+scheduler.add_job(
+    func=repeat_service_call,
+    trigger=IntervalTrigger(seconds=30),
+    id='repeat_service_call_job',
+    name='Repeat last service script every thirty seconds',
+    replace_existing=True)
 
+if __name__ == "__main__":
     app.run(host='0.0.0.0',port=5000)
