@@ -547,15 +547,23 @@ void outputStatus() {
   
       if ( laserMsg.length() > 0 ) 
       {
-        // Output Laser message
-        Serial.println( (String)cnt + ":" + (String)freeRam() + ":" + (String)duration + ":" + getLaserMode() + ":" + (String)laserSize + ":" + (String)laserMsg.length() + ":" + laserMsg );
-        //Serial.println( "INP:"+inputString );
+        // Output Laser status message
+        // Format is ...
+        // No. of times the laser command has been repeated
+        // Number of bytes of Free RAM
+        // mSecs between laser commands
+        // length of the inputString (should always be zero, if non-zero a <CR> has been lost, send blank cmd - just <CR> to clear state)
+        // laser command mode
+        // laser size
+        // laser message length
+        // laser message
+        Serial.println( (String)cnt + ":" + (String)freeRam() + ":" + (String)duration + ":" + (String)inputString.length() + ":" + getLaserMode() + ":" + (String)laserSize + ":" + (String)laserMsg.length() + ":" + laserMsg );
       }
       
       if ( laserAnim != 0 )
       {
         // Output laserAnimation
-        Serial.println( (String)cnt + ":" + (String)freeRam() + ":" + (String)duration + ":" + getLaserMode() + ":" + (String)laserSize + ":" + getLaserAnimation());
+        Serial.println( (String)cnt + ":" + (String)freeRam() + ":" + (String)duration + ":" + (String)inputString.length() + ":" + getLaserMode() + ":" + (String)laserSize + ":" + getLaserAnimation());
       }
     }
   }  
@@ -574,9 +582,6 @@ void loop() {
   // If laserMsg is set we should display a message ...
   if ( repeat )
   {
-    if ( cnt > 999 ) {
-      cnt = 0;
-    }
     cnt++;
     if ( laserMsg.length() > 0 ) {
       int commaAt = laserMsg.indexOf(',');

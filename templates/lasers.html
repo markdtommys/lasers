@@ -30,6 +30,11 @@
     </style>
     <!-- Repeatedly check for laser Responses -->
     <script type="text/javascript">
+      function sendClear(){
+        $.ajax({url:"/sendClear", success:function(result){}
+        });
+      }
+
       function getData(){
         $.ajax({url:"/getData", success:function(result){
           // All data returned from serverside
@@ -264,6 +269,7 @@
           <input type="hidden" id="mode" name="mode" value="X">
           <input type="hidden" name="responseTemplate" value="lasers.html">           
           <button type="submit" class="btn btn-default btn-warning">Laser Off</button>
+          <button type="button" class="btn btn-default btn-warning" onclick="sendClear()">Clear</button>
         </div>
       </form>        
     </div>

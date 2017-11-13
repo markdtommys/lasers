@@ -73,6 +73,17 @@ class LaserDisplayController(object):
         except Exception as error:
             return 'ERROR unable to send the command - ' + str(error)
 
+    def send_cr(self):
+        """
+        send <CR> down the serial interface
+        """
+        try:
+            time.sleep(1)
+            self.seriallink.write("\n")
+            return 'sent <CR> OK'
+        except Exception as error:
+            return 'ERROR unable to send the command - ' + str(error)
+
     def read_response(self):
         """
         read response from the serial port

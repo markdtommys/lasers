@@ -62,12 +62,7 @@ def read_laser_function():
     response = lc.read_response()
     if len(response) > 0:
         cntLaserResponse += 1
-        print str(time.clock()) + ":DEBUG read_laser_function " + str(cntLaserResponse) + " : " + response
-        if not response.startswith('INP'):
-            laserResponse = str(cntLaserResponse) + ":" + response
-    else:
-        print str(time.clock()) + ":DEBUG NO_DATA read_laser_function " + str(cntLaserResponse)
-        
+        laserResponse = str(cntLaserResponse) + ":" + response        
 
 def repeat_service_call():
     global laserMode,laserSize,laserCmd,laserText,formatResponse,sendResponse,stringSent
@@ -107,6 +102,11 @@ def form():
 @app.route('/mobile', methods=['GET', 'POST'])
 def formMobile():
     return render_template('lasersMobile.html',laserPort=laserPort,laserServices=laserServices) 
+
+@app.route('/sendClear', methods=['GET']) 
+def sndClr():
+    lc.send_cr()
+    return "OK"
 
 @app.route('/getData', methods=['GET']) 
 def gtDta():
