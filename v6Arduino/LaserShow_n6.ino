@@ -37,6 +37,38 @@ boolean repeat = false; // Flag to repeat display in this loop
 // Create laser instance (with laser pointer connected to digital pin 5)
 Laser laser(5);
 
+// laser driver delays now runtime configurable
+// quality - lines longer than this parameter will be split into multiple lines at this length
+// To just get the current value, send -1
+int quality(int maxLineSegLen)
+{
+  return laser.quality(maxLineSegLen);
+}
+// ToggleDelay - delay in microseconds applied when the laser state changes.
+// To just get the current value, send -1
+int toggleDelay(int delayMicroSecs)
+{
+  return laser.toggleDelay(delayMicroSecs);
+}
+// lineEndDelay - delay in microseconds at the end of a line - 3d only
+// To just get the current value, send -1
+int lineEndDelay(int delayMicroSecs)
+{
+  return laser.lineEndDelay(delayMicroSecs);
+}
+// endDelay - delay in microseconds at the end of a 2d line
+// To just get the current value, send -1
+int endDelay(int delayMicroSecs)
+{
+  return laser.endDelay(delayMicroSecs);
+}
+// moveDelay - delay in microseconds between moves
+// To just get the current value, send -1
+int moveDelay(int delayMicroSecs)
+{
+  return laser.moveDelay(delayMicroSecs);
+}
+
 void setup()
 {  
   laser.init();

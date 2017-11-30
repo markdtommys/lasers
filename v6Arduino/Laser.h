@@ -40,6 +40,13 @@ public:
 
   void init();
 
+  // Delay control - returns new value, call with -1 to get current value
+  int quality(int maxLineSegLen);
+  int toggleDelay(int delayMicroSecs);
+  int lineEndDelay(int delayMicroSecs);
+  int endDelay(int delayMicroSecs);
+  int moveDelay(int delayMicroSecs);
+  
   //! send the laser to the given position, scaled and translated and line clipped.
   void sendto(long x, long y);
   //! sends the laser to the raw position (the movement is always linearly interpolated depending on the quality,
@@ -85,6 +92,12 @@ private:
   long _x;
   long _y;
   int  _state;
+
+  int _laserQuality;
+  int _laserToggleDelay;
+  int _laserLineEndDelay;
+  int _laserEndDelay;
+  int _laserMoveDelay;
 
   FIXPT _scale;
   long _offsetX;

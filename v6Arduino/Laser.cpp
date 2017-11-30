@@ -38,6 +38,17 @@ Laser::Laser(int laserPin)
 
 void Laser::init()
 {
+  // Initialise delays as set in laser.h
+  _laserQuality = LASER_QUALITY;
+  _laserToggleDelay = LASER_TOGGLE_DELAY;
+  _laserLineEndDelay = LASER_LINE_END_DELAY;
+  _laserEndDelay = LASER_END_DELAY;
+  #ifdef LASER_MOVE_DELAY
+    _laserMoveDelay = LASER_MOVE_DELAY;
+  #else
+    _laserMoveDelay = 0;
+  #endif
+
   dac.init(MCP4X_4822, 5000, 5000,
       10, 7, 1);
   dac.setGain2x(MCP4X_CHAN_A, 0);
@@ -45,6 +56,56 @@ void Laser::init()
   dac.begin(1);
  
   pinMode(_laserPin, OUTPUT);
+}
+
+// Laser quality setting
+int Laser::quality(int maxLineSegLen)
+{
+  if ( maxLineSegLen >=0 )
+  {
+    _laserQuality = maxLineSegLen;
+  }
+  return _laserQuality;
+}
+
+// Laser toggle delay setting
+int Laser::toggleDelay(int delayMicroSecs)
+{
+  if ( delayMicroSecs >= 0 )
+  {
+    _laserToggleDelay = delayMicroSecs;
+  }
+  return _laserToggleDelay;
+}
+
+// Laser line end delay setting
+int Laser::lineEndDelay(int delayMicroSecs)
+{
+  if ( delayMicroSecs >= 0 )
+  {
+    _laserLineEndDelay = delayMicroSecs;
+  }
+  return _laserLineEndDelay;
+}
+
+// Laser end delay setting
+int Laser::endDelay(int delayMicroSecs)
+{
+  if ( delayMicroSecs >= 0 )
+  {
+    _laserEndDelay = delayMicroSecs;
+  }
+  return _laserEndDelay;
+}
+
+// Laser move delay setting
+int Laser::moveDelay(int delayMicroSecs)
+{
+  if ( delayMicroSecs >= 0 )
+  {
+    _laserMoveDelay = delayMicroSecs;
+  }
+  return _laserMoveDelay;
 }
 
 void Laser::sendToDAC(int x, int y)
@@ -226,9 +287,10 @@ void Laser::sendtoRaw (long xNew, long yNew)
     tmpx += fdiffx;
     tmpy += fdiffy;
     sendToDAC(_x + TO_INT(tmpx), _y + TO_INT(tmpy));
-    #ifdef LASER_MOVE_DELAY
-    wait(LASER_MOVE_DELAY);
-    #endif
+    if (_laserMoveDelay > 0)
+    {
+      wait(_laserMoveDelay);
+    }
   }
   
   // for max move, stop if required...
@@ -242,7 +304,7 @@ void Laser::sendtoRaw (long xNew, long yNew)
   _x = xNew;
   _y = yNew;
   sendToDAC(_x, _y);
-  wait(LASER_END_DELAY);
+  wait(_laserEndDelay);
 }
 
 void Laser::drawline(long x1, long y1, long x2, long y2)
@@ -254,14 +316,14 @@ void Laser::drawline(long x1, long y1, long x2, long y2)
   }
   on();
   sendto(x2,y2);
-  wait(LASER_LINE_END_DELAY);
+  wait(_laserLineEndDelay);
 }
 
 void Laser::on()
 {
   if (!_state && !_laserForceOff) 
   {
-    wait(LASER_TOGGLE_DELAY);
+    wait(_laserToggleDelay);
     _state = 1;
     digitalWrite(_laserPin, HIGH);
   }
@@ -271,7 +333,7 @@ void Laser::off()
 {
   if (_state) 
   {
-    wait(LASER_TOGGLE_DELAY);
+    wait(_laserToggleDelay);
     _state = 0;
     digitalWrite(_laserPin, LOW);
   }
