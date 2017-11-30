@@ -1,6 +1,7 @@
 import json
 import urllib2
 
+
 def performactions():
     """
     get the day length, sunrise and sunset times from sunrise-sunset.org
@@ -14,8 +15,14 @@ def performactions():
     jsontext = json.loads(getrequest.read())
     sunrise = jsontext['results']['sunrise']
     sunset = jsontext['results']['sunset']
+    sunrisesplit = sunrise.split(':')
+    sunrise = ':'.join([sunrisesplit[0],sunrisesplit[1]])
+    sunsetsplit = sunset.split(':')
+    sunset = ':'.join([sunsetsplit[0],sunsetsplit[1]])
     daylength = jsontext['results']['day_length']
-    returnstring = 'day length {} sunrise {} sunset {}'.format(daylength, sunrise, sunset)
+    returnstring = 'l {} r {} s {}'.format(daylength, sunrise, sunset)
+    returnstring = returnstring.replace('AM', '')
+    returnstring = returnstring.replace('PM', '')
     return returnstring
 
 

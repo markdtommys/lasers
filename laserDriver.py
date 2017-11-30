@@ -21,7 +21,8 @@ class LaserDisplayController(object):
         format the command before it is sent down the serial interface
         """
         if displaymode == 'M':
-            displaytextmaxlen = 128
+            #displaytextmaxlen = 128
+            displaytextmaxlen = 30
         else:
             displaytextmaxlen = 30
         displaytext = displaytext.upper()
